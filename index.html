@@ -30,7 +30,7 @@
   .ctrl-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
   #right-controls { display:flex; gap:6px; margin-left:auto; }
   .layout { display:flex; }
-  aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; align-self:flex-start; position:sticky; top:97px; }
+  aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; align-self:flex-start; position:sticky; top:var(--topbar-h, 100px); }
   .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
   .section { margin-bottom:18px; }
   #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
@@ -39,13 +39,16 @@
   .filter-chip:has(input:checked) { opacity:1; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
   .filter-chip input { position:absolute; opacity:0; width:0; height:0; }
   .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
+  .filter-chip.period-chip { opacity:0.4; }
+  .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
+  .node.is-achieved { opacity:0.55; }
   .main { flex:1; min-width:0; }
   .lane-labels-wrap { display:flex; }
   .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
   .lane-label { position:absolute; width:100%; display:flex; flex-direction:column; justify-content:center; padding:4px 10px; font-size:12px; font-weight:500; }
   .lane-count { font-size:10px; color:var(--ink-soft); font-weight:400; }
   .timeline-scroll { flex:1; overflow-x:auto; position:relative; }
-  .tick-row { position:sticky; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
+  .tick-row { position:sticky; top:var(--topbar-h, 100px); height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
   .tick { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); transform:translateX(2px); }
   .today-label { position:absolute; top:5px; font-size:11px; color:var(--accent); font-weight:500; transform:translateX(4px); }
   .tbd-label { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); }
@@ -136,6 +139,10 @@
       <div class="filter-chips" id="status-filters"></div>
     </div>
     <div class="section">
+      <div class="section-title">시기</div>
+      <div class="filter-chips" id="period-filters"></div>
+    </div>
+    <div class="section">
       <div class="section-title">카테고리</div>
       <div class="filter-chips" id="category-filters"></div>
     </div>
@@ -194,8 +201,30 @@ function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let GRAPH = null;
 let VIEW_MODE = "time";
+let ACTIVE_PERIOD = null;
 let FULL_ORDER = [];
 let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
+
+function periodKey(dateStr) {
+  if (!dateStr) return "TBD";
+  const [y, m] = dateStr.split("-").map(Number);
+  return `${y}-H${m <= 6 ? 1 : 2}`;
+}
+function periodLabel(key) {
+  if (key === "TBD") return "날짜 미정";
+  const [y, h] = key.split("-H");
+  return `${y} ${h === "1" ? "상반기" : "하반기"}`;
+}
+function computePeriods() {
+  const dated = GRAPH.nodes.filter(n => n.targetDate);
+  if (!dated.length) return ["TBD"];
+  const years = dated.map(n => Number(n.targetDate.slice(0, 4)));
+  const minY = Math.min(...years), maxY = Math.max(...years);
+  const periods = [];
+  for (let y = minY; y <= maxY; y++) { periods.push(`${y}-H1`); periods.push(`${y}-H2`); }
+  periods.push("TBD");
+  return periods;
+}
 
 function ensureWorkerUrl() {
   if (WORKER_URL) return true;
@@ -336,7 +365,8 @@ function passesFilter(n, f) {
   const catOk = cats.some(c => f.categories.has(c));
   const statusOk = f.statuses.has(n.status);
   const searchOk = !f.q || n.title.toLowerCase().includes(f.q);
-  return catOk && statusOk && searchOk;
+  const periodOk = !ACTIVE_PERIOD || periodKey(n.targetDate) === ACTIVE_PERIOD;
+  return catOk && statusOk && searchOk && periodOk;
 }
 
 function renderStatic() {
@@ -369,13 +399,23 @@ function renderStatic() {
   }).join("");
 
   const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
-  document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).filter(([k]) => k !== "달성").map(([key, meta]) =>
-    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" checked><span class="dot" style="background:${meta.fg}"></span>${meta.label}</label>`
+  document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
+    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" ${key === "달성" ? "" : "checked"}><span class="dot" style="background:${meta.fg}"></span>${meta.label}</label>`
   ).join("");
   document.getElementById("category-filters").innerHTML = presentCats.map((c) => {
     const meta = CATEGORY_META[c];
     return `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="cat-cb" value="${esc(c)}" checked>${meta.emoji} ${esc(meta.label)}</label>`;
   }).join("");
+
+  const periods = computePeriods();
+  document.getElementById("period-filters").innerHTML =
+    `<button class="filter-chip period-chip active" data-period="">전체</button>` +
+    periods.map(p => `<button class="filter-chip period-chip" data-period="${esc(p)}">${esc(periodLabel(p))}</button>`).join("");
+  document.querySelectorAll(".period-chip").forEach(btn => btn.addEventListener("click", () => {
+    ACTIVE_PERIOD = btn.dataset.period || null;
+    document.querySelectorAll(".period-chip").forEach(b => b.classList.toggle("active", b.dataset.period === (btn.dataset.period || "")));
+    rerenderCanvas();
+  }));
 
   document.querySelectorAll(".status-cb, .cat-cb").forEach(cb => cb.addEventListener("change", () => rerenderCanvas()));
   document.getElementById("search").addEventListener("input", () => rerenderCanvas());
@@ -393,14 +433,12 @@ function renderStatic() {
 
 function rerenderCanvas() {
   const f = getFilterState();
-  const activeAll = GRAPH.nodes.filter(n => n.status !== "달성");
-  const filtered = activeAll.filter(n => passesFilter(n, f));
+  const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
   const layout = buildLayout(filtered, VIEW_MODE);
   const nodeById = new Map();
   for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
 
-  const fullLayout = buildLayout(activeAll, VIEW_MODE);
-  FULL_ORDER = fullLayout.lanes.flatMap(l => l.nodes.map(n => n.id));
+  FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
 
   const modeBtn = document.getElementById("mode-btn");
   if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "시간순 보기";
@@ -452,7 +490,8 @@ function rerenderCanvas() {
     const extraDots = extraCats.length
       ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c]||CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
     const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
-    return `<div class="node ${n.overdue ? "overdue" : ""}" data-id="${esc(n.id)}"${titleAttr}
+    const achievedCls = n.status === "달성" ? "is-achieved" : "";
+    return `<div class="node ${n.overdue ? "overdue" : ""} ${achievedCls}" data-id="${esc(n.id)}"${titleAttr}
       style="left:${n.x}px;top:${n.y}px;width:${NODE_W}px;height:${NODE_H}px;background:${bg};border-color:${cat.fg};">
       ${statusHtml}
       <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
@@ -479,10 +518,11 @@ function rerenderCanvas() {
 
 function syncTickRowTop() {
   const tb = document.getElementById("topbar");
-  const tickRow = document.getElementById("tick-row");
-  if (tb && tickRow) tickRow.style.top = tb.offsetHeight + "px";
+  if (tb) document.documentElement.style.setProperty("--topbar-h", tb.offsetHeight + "px");
 }
 window.addEventListener("resize", syncTickRowTop);
+new ResizeObserver(syncTickRowTop).observe(document.getElementById("topbar"));
+syncTickRowTop();
 
 function wireCanvasInteractions() {
   const nodeEls = Array.from(document.querySelectorAll(".node"));
