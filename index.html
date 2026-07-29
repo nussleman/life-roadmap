@@ -37,13 +37,17 @@
   #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
   #period-select { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:12px; }
   .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.4; background:var(--paper); transition:opacity .15s; }
-  .filter-chip:has(input:checked) { opacity:1; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
+  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.45; background:var(--paper); transition:opacity .15s; }
+  .filter-chip:has(input:checked) { opacity:1; font-weight:600; border-width:1.5px; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
   .filter-chip input { position:absolute; opacity:0; width:0; height:0; }
   .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
   .filter-chip.period-chip { opacity:0.4; }
   .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
   .node.is-achieved { opacity:0.55; }
+  .node.node-flow { position:static; width:170px; }
+  .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px; max-width:1500px; }
+  .singles-grid.show { display:flex; }
+  .singles-header { width:100%; font-size:12px; color:var(--ink-soft); margin-bottom:2px; }
   .main { flex:1; min-width:0; height:100%; display:flex; flex-direction:column; min-height:0; }
   .lane-labels-wrap { display:flex; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; position:relative; }
   .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
@@ -61,8 +65,8 @@
   .node:hover { filter:brightness(0.97); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
   .node.selected { box-shadow:0 0 0 2px var(--ink); }
-  .status-chip { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:500; border-radius:999px; padding:1px 7px; width:fit-content; }
-  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); }
+  .status-chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; letter-spacing:0.2px; border-radius:999px; padding:2px 8px; width:fit-content; border:1px solid transparent; }
+  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); }
   .node-title { font-size:12px; font-weight:500; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .extra-cats { display:flex; gap:3px; margin-top:1px; }
   .extra-cats span { width:6px; height:6px; border-radius:999px; display:inline-block; }
@@ -155,6 +159,7 @@
       <div class="timeline-scroll" id="timeline-scroll">
         <div class="tick-row" id="tick-row"></div>
         <div class="canvas" id="canvas"></div>
+        <div class="singles-grid" id="singles-grid"></div>
       </div>
     </div>
   </div>
@@ -169,9 +174,9 @@ const NODE_W = 156, NODE_H = 64, ROW_GAP = 8, LANE_PAD = 14;
 const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", fg: "#6b6b66", bg: "#f1f1ee" },
-  "진행 중": { label: "진행 중", fg: "#a3630a", bg: "#fdf1de" },
-  "달성": { label: "달성", fg: "#0f8f6c", bg: "#e6f7f1" },
+  "시작 전": { label: "시작 전", fg: "#3d4451", bg: "#e2e5ea" },
+  "진행 중": { label: "진행 중", fg: "#a8500a", bg: "#fde3c3" },
+  "달성": { label: "달성", fg: "#04785a", bg: "#c8f3e3" },
 };
 
 const CATEGORY_ORDER = [
@@ -442,14 +447,29 @@ function renderStatic() {
 function rerenderCanvas() {
   const f = getFilterState();
   const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
-  const layout = buildLayout(filtered, VIEW_MODE);
-  const nodeById = new Map();
-  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
-
-  FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
 
   const modeBtn = document.getElementById("mode-btn");
   if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "시간순 보기";
+
+  const laneLabelsEl = document.getElementById("lane-labels");
+  const singlesEl = document.getElementById("singles-grid");
+
+  if (VIEW_MODE === "sequence") {
+    laneLabelsEl.style.display = "none";
+    renderSequenceMode(filtered);
+  } else {
+    laneLabelsEl.style.display = "";
+    singlesEl.classList.remove("show");
+    singlesEl.innerHTML = "";
+    renderTimeMode(filtered);
+  }
+}
+
+function renderTimeMode(filtered) {
+  const layout = buildLayout(filtered, "time");
+  const nodeById = new Map();
+  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
+  FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
 
   document.getElementById("lane-labels").style.height = layout.totalHeight + "px";
   document.getElementById("lane-labels").innerHTML = layout.lanes.map((lane) => {
@@ -461,22 +481,17 @@ function rerenderCanvas() {
   }).join("");
 
   const tickRow = document.getElementById("tick-row");
-  if (layout.hasTimeAxis) {
-    const ticks = monthTicks(layout.minM, layout.maxM);
-    tickRow.style.width = layout.totalWidth + "px";
-    tickRow.innerHTML =
-      ticks.map(t => `<div class="tick" style="left:${t.x}px">${esc(t.label)}</div>`).join("") +
-      `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
-      `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
-  } else {
-    tickRow.style.width = layout.totalWidth + "px";
-    tickRow.innerHTML = `<div class="seq-label">시간축 없이 순서대로 표시 중</div>`;
-  }
+  const ticks = monthTicks(layout.minM, layout.maxM);
+  tickRow.style.width = layout.totalWidth + "px";
+  tickRow.innerHTML =
+    ticks.map(t => `<div class="tick" style="left:${t.x}px">${esc(t.label)}</div>`).join("") +
+    `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
+    `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
 
   const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(0,0,0,0.015);" : ""}"></div>`).join("");
-  const tickLines = layout.hasTimeAxis ? monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("") : "";
-  const todayLine = layout.hasTimeAxis ? `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>` : "";
-  const tbdDivider = layout.hasTimeAxis ? `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>` : "";
+  const tickLines = monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("");
+  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>`;
 
   const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const s = nodeById.get(e.source), t = nodeById.get(e.target);
@@ -486,26 +501,7 @@ function rerenderCanvas() {
     return `<path d="${d}" fill="none" stroke="#b7b7ae" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
-  const nodeDivs = layout.lanes.flatMap(l => l.nodes).map((n) => {
-    const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
-    const meta = STATUS_META[n.status];
-    const emoji = n.icon || cat.emoji;
-    const bg = n.status === "진행 중" ? cat.bg2 : cat.bg;
-    const extraCats = n.categories.slice(1);
-    const statusHtml = n.overdue
-      ? `<span class="status-chip overdue-tag">지연됨</span>`
-      : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg}">${meta.label}</span>`;
-    const extraDots = extraCats.length
-      ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c]||CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
-    const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
-    const achievedCls = n.status === "달성" ? "is-achieved" : "";
-    return `<div class="node ${n.overdue ? "overdue" : ""} ${achievedCls}" data-id="${esc(n.id)}"${titleAttr}
-      style="left:${n.x}px;top:${n.y}px;width:${NODE_W}px;height:${NODE_H}px;background:${bg};border-color:${cat.fg};">
-      ${statusHtml}
-      <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
-      ${extraDots}
-    </div>`;
-  }).join("");
+  const nodeDivs = layout.lanes.flatMap(l => l.nodes).map(n => renderNodeDiv(n, NODE_W, NODE_H)).join("");
 
   document.getElementById("canvas").style.width = layout.totalWidth + "px";
   document.getElementById("canvas").style.height = layout.totalHeight + "px";
@@ -523,6 +519,179 @@ function rerenderCanvas() {
   wireCanvasInteractions();
 }
 
+function renderNodeDiv(n, w, h) {
+  const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
+  const meta = STATUS_META[n.status];
+  const emoji = n.icon || cat.emoji;
+  const bg = n.status === "진행 중" ? cat.bg2 : cat.bg;
+  const extraCats = n.categories.slice(1);
+  const statusHtml = n.overdue
+    ? `<span class="status-chip overdue-tag">지연됨</span>`
+    : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${meta.label}</span>`;
+  const extraDots = extraCats.length
+    ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c] || CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
+  const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
+  const achievedCls = n.status === "달성" ? "is-achieved" : "";
+  const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
+  const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
+  return `<div class="node ${n.overdue ? "overdue" : ""} ${achievedCls} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"${titleAttr}
+    style="${posStyle}${sizeStyle}background:${bg};border-color:${cat.fg};">
+    ${statusHtml}
+    <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
+    ${extraDots}
+  </div>`;
+}
+
+const CHAIN_COL_W = 250, CHAIN_ROW_GAP = 16;
+
+function buildChainView(nodes) {
+  const idSet = new Set(nodes.map(n => n.id));
+  const seqEdges = GRAPH.edges.filter(e => e.kind === "sequence" && idSet.has(e.source) && idSet.has(e.target));
+  const degree = new Map(nodes.map(n => [n.id, 0]));
+  const succMap = new Map(nodes.map(n => [n.id, []]));
+  const predMap = new Map(nodes.map(n => [n.id, []]));
+  const adj = new Map(nodes.map(n => [n.id, new Set()]));
+  for (const e of seqEdges) {
+    succMap.get(e.source).push(e.target);
+    predMap.get(e.target).push(e.source);
+    adj.get(e.source).add(e.target);
+    adj.get(e.target).add(e.source);
+    degree.set(e.source, degree.get(e.source) + 1);
+    degree.set(e.target, degree.get(e.target) + 1);
+  }
+
+  const visited = new Set();
+  const components = [];
+  for (const n of nodes) {
+    if (visited.has(n.id)) continue;
+    const comp = [];
+    const stack = [n.id];
+    visited.add(n.id);
+    while (stack.length) {
+      const cur = stack.pop();
+      comp.push(cur);
+      for (const nb of adj.get(cur)) if (!visited.has(nb)) { visited.add(nb); stack.push(nb); }
+    }
+    components.push(comp);
+  }
+
+  const chains = components.filter(c => c.length > 1).sort((a, b) => b.length - a.length);
+  const singleIds = new Set(components.filter(c => c.length === 1).flat());
+  const byId = new Map(nodes.map(n => [n.id, n]));
+
+  function sizeFor(id) {
+    const d = degree.get(id) || 0;
+    return { w: Math.min(NODE_W + d * 14, 240), h: Math.min(NODE_H + Math.min(d, 3) * 6, 84) };
+  }
+
+  const placed = [];
+  let blockY = 0;
+  for (const comp of chains) {
+    const compSet = new Set(comp);
+    const indeg = new Map(comp.map(id => [id, predMap.get(id).filter(p => compSet.has(p)).length]));
+    const rank = new Map();
+    const queue = comp.filter(id => indeg.get(id) === 0);
+    queue.forEach(id => rank.set(id, 0));
+    const pushed = new Set(queue);
+    let qi = 0;
+    while (qi < queue.length) {
+      const cur = queue[qi++];
+      for (const nxt of succMap.get(cur)) {
+        if (!compSet.has(nxt)) continue;
+        const newRank = rank.get(cur) + 1;
+        if (!rank.has(nxt) || rank.get(nxt) < newRank) rank.set(nxt, newRank);
+        indeg.set(nxt, indeg.get(nxt) - 1);
+        if (indeg.get(nxt) <= 0 && !pushed.has(nxt)) { pushed.add(nxt); queue.push(nxt); }
+      }
+    }
+    comp.forEach(id => { if (!rank.has(id)) rank.set(id, 0); });
+
+    const byRank = new Map();
+    comp.forEach(id => {
+      const r = rank.get(id);
+      if (!byRank.has(r)) byRank.set(r, []);
+      byRank.get(r).push(id);
+    });
+    const maxRank = Math.max(...comp.map(id => rank.get(id)));
+
+    const rowOf = new Map();
+    for (let r = 0; r <= maxRank; r++) {
+      const idsAtRank = (byRank.get(r) || []).slice();
+      idsAtRank.sort((a, b) => {
+        const pa = predMap.get(a).filter(p => compSet.has(p));
+        const pb = predMap.get(b).filter(p => compSet.has(p));
+        const avgA = pa.length ? pa.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pa.length : 999;
+        const avgB = pb.length ? pb.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pb.length : 999;
+        if (avgA !== avgB) return avgA - avgB;
+        return byId.get(a).title.localeCompare(byId.get(b).title, "ko");
+      });
+      idsAtRank.forEach((id, i) => rowOf.set(id, i));
+    }
+
+    const maxRow = Math.max(...comp.map(id => rowOf.get(id)));
+    const rowHeight = Math.max(...comp.map(id => sizeFor(id).h)) + CHAIN_ROW_GAP;
+
+    comp.forEach((id) => {
+      const { w, h } = sizeFor(id);
+      const x = TIMELINE_START + rank.get(id) * CHAIN_COL_W;
+      const y = blockY + rowOf.get(id) * rowHeight;
+      placed.push({ ...byId.get(id), x, y, w, h });
+    });
+
+    blockY += (maxRow + 1) * rowHeight + 44;
+  }
+
+  const maxX = placed.length ? Math.max(...placed.map(p => p.x + p.w)) : TIMELINE_START;
+  const totalWidth = Math.max(maxX + 60, 900);
+  const totalHeight = Math.max(blockY, 40);
+  const singles = nodes.filter(n => singleIds.has(n.id)).sort((a, b) => a.title.localeCompare(b.title, "ko"));
+
+  return { placed, totalWidth, totalHeight, singles, seqEdges };
+}
+
+function renderSequenceMode(filtered) {
+  const view = buildChainView(filtered);
+  const nodeById = new Map(view.placed.map(n => [n.id, n]));
+  FULL_ORDER = [...view.placed.map(n => n.id), ...view.singles.map(n => n.id)];
+
+  const tickRow = document.getElementById("tick-row");
+  tickRow.style.width = "100%";
+  tickRow.innerHTML = `<div class="seq-label">화살표(선행→후속)로 연결된 목표는 흐름대로, 연결이 없는 목표는 아래 목록에 표시돼요</div>`;
+
+  const edgePaths = view.seqEdges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
+    const s = nodeById.get(e.source), t = nodeById.get(e.target);
+    const d = edgePathD(s.x + s.w, s.y + s.h / 2, t.x, t.y + t.h / 2);
+    return `<path d="${d}" fill="none" stroke="#8a8578" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+  }).join("");
+
+  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, n.h)).join("");
+
+  document.getElementById("canvas").style.width = view.totalWidth + "px";
+  document.getElementById("canvas").style.height = view.totalHeight + "px";
+  document.getElementById("canvas").innerHTML = `
+    <svg width="${view.totalWidth}" height="${view.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
+      <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#8a8578" stroke-width="1.5"/>
+      </marker></defs>
+      ${edgePaths}
+    </svg>
+    ${nodeDivs}
+  `;
+
+  const singlesEl = document.getElementById("singles-grid");
+  if (view.singles.length) {
+    singlesEl.classList.add("show");
+    singlesEl.innerHTML =
+      `<div class="singles-header">연결된 목표가 없는 항목 ${view.singles.length}개</div>` +
+      view.singles.map(n => renderNodeDiv({ ...n, flow: true }, null, null)).join("");
+  } else {
+    singlesEl.classList.remove("show");
+    singlesEl.innerHTML = "";
+  }
+
+  wireCanvasInteractions();
+}
+
 function wireCanvasInteractions() {
   const nodeEls = Array.from(document.querySelectorAll(".node"));
   nodeEls.forEach((el) => {
@@ -535,6 +704,7 @@ function wireCanvasInteractions() {
       if (n) openModal(n);
     });
   });
+
 
   document.getElementById("today-btn").addEventListener("click", goToday);
 }
