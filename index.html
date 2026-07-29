@@ -8,23 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper:#14181f; --paper-raised:#1c212b; --paper-hover:#232936;
-    --ink:#f1ede2; --ink-soft:#9a978c; --line:#333846;
-    --accent:#ff5470; --accent-soft:rgba(255,84,112,0.15);
+    --paper:#ffffff; --paper-raised:#f7f7f5; --paper-hover:#eeeeec;
+    --ink:#1a1a18; --ink-soft:#6b6b66; --line:#e2e2de;
+    --accent:#d6304a; --accent-soft:rgba(214,48,74,0.08);
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; }
   h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; }
   a { color: inherit; }
   #topbar { position:sticky; top:0; z-index:30; background:var(--paper); border-bottom:1px solid var(--line); }
-  .banner { padding:6px 24px; font-size:11px; color:var(--ink-soft); border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; }
-  .banner button { font-size:11px; background:none; border:1px solid var(--line); color:var(--ink-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
+  .banner { padding:6px 24px; font-size:11px; color:var(--ink-soft); border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; background:var(--paper-raised); }
+  .banner button { font-size:11px; background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
   header { padding:14px 24px 12px; }
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-  .chip { font-size:12px; border:1px solid #f5a623; color:#f5a623; background:rgba(245,166,35,0.12); border-radius:999px; padding:4px 10px; cursor:pointer; }
-  .chip:hover { background:rgba(245,166,35,0.22); }
+  .chip { font-size:12px; border:1px solid #c9820f; color:#8a5a0a; background:#fbf1de; border-radius:999px; padding:4px 10px; cursor:pointer; }
+  .chip:hover { background:#f5e2bd; }
   #today-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; margin-left:auto; }
   #today-btn:hover { background:var(--paper-hover); }
   .layout { display:flex; }
@@ -33,7 +33,7 @@
   .section { margin-bottom:18px; }
   .row { display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer; }
   .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
-  #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper-raised); color:var(--ink); font-size:13px; }
+  #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
   .main { flex:1; min-width:0; }
   .lane-labels-wrap { display:flex; }
   .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
@@ -47,7 +47,7 @@
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
   .node { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:2px; border:1px solid; border-radius:8px; padding:6px 8px; cursor:pointer; overflow:hidden; background-clip:padding-box; }
-  .node:hover { filter:brightness(1.25); }
+  .node:hover { filter:brightness(0.97); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
   .node-status { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--ink-soft); }
   .node-status.overdue-tag { color:var(--accent); }
@@ -56,29 +56,46 @@
   details { margin:20px 24px; }
   summary { cursor:pointer; font-size:13px; color:var(--ink-soft); padding:8px 0; }
   .pills { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0 20px; }
-  .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; text-decoration:none; background:var(--paper-raised); }
+  .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; background:var(--paper-raised); }
   .pill-date { opacity:0.6; margin-left:4px; }
   #loading, #error { padding:60px 24px; text-align:center; color:var(--ink-soft); }
   #error { color:var(--accent); }
-  .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:100; }
-  .modal { width:420px; max-width:90vw; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:20px; }
+  .overlay { position:fixed; inset:0; background:rgba(20,20,18,0.4); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal { width:460px; max-width:92vw; max-height:88vh; overflow-y:auto; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.14); }
   .modal h2 { font-size:17px; margin:0 0 4px; }
   .modal .meta { font-size:12px; color:var(--ink-soft); margin-bottom:14px; }
-  .field { margin-bottom:12px; }
+  .field { margin-bottom:14px; }
   .field label { display:block; font-size:11px; color:var(--ink-soft); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px; }
   .field select, .field input, .field textarea {
     width:100%; padding:8px; border:1px solid var(--line); border-radius:6px;
     background:var(--paper); color:var(--ink); font-family:inherit; font-size:13px;
   }
-  .field textarea { min-height:80px; resize:vertical; }
-  .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+  .field textarea { min-height:70px; resize:vertical; }
+  .rel-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .rel-chip { display:inline-flex; align-items:center; gap:5px; font-size:12px; background:var(--paper-raised); border:1px solid var(--line); border-radius:999px; padding:3px 6px 3px 10px; }
+  .rel-chip button { border:none; background:none; cursor:pointer; color:var(--ink-soft); font-size:13px; line-height:1; padding:2px; }
+  .rel-add { display:flex; gap:6px; }
+  .rel-add select { flex:1; }
+  .rel-add button { flex-shrink:0; }
+  .modal-actions { display:flex; gap:8px; justify-content:space-between; margin-top:16px; align-items:center; }
+  .modal-actions-right { display:flex; gap:8px; }
   .btn { font-size:13px; padding:8px 14px; border-radius:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.danger { background:#fdeceb; border-color:#f0b8b3; color:#a02a1f; }
   .btn:hover { background:var(--paper-hover); }
+  .btn.primary:hover { background:#bd2740; }
+  .btn.danger:hover { background:#f9d9d5; }
   .modal-msg { font-size:12px; margin-top:8px; min-height:16px; }
-  .modal-msg.ok { color:#4fd8b0; }
+  .modal-msg.ok { color:#0f8f6c; }
   .modal-msg.err { color:var(--accent); }
-  .open-link { font-size:12px; color:#63b3ed; text-decoration:none; }
+  .open-link { font-size:12px; color:#1c6fb0; text-decoration:none; }
+  .content-box { border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; background:var(--paper-raised); max-height:220px; overflow-y:auto; }
+  .content-box p { margin:0 0 8px; }
+  .content-box h3, .content-box h4, .content-box h5 { margin:10px 0 4px; font-family:inherit; }
+  .content-box li { margin:2px 0; }
+  .content-box hr { border:none; border-top:1px solid var(--line); margin:8px 0; }
+  .content-box blockquote { margin:6px 0; padding-left:10px; border-left:2px solid var(--line); color:var(--ink-soft); }
+  .content-box code { background:var(--paper-hover); padding:1px 4px; border-radius:4px; font-family:monospace; }
 </style>
 </head>
 <body>
@@ -130,9 +147,9 @@ const NODE_W = 156, NODE_H = 60, ROW_GAP = 8, LANE_PAD = 14;
 const PX_PER_MONTH = 30, TIMELINE_START = 160;
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", dot: "#6b7280" },
-  "진행 중": { label: "진행 중", dot: "#f5a623" },
-  "달성": { label: "달성", dot: "#4fd8b0" },
+  "시작 전": { label: "시작 전", dot: "#9a9a94" },
+  "진행 중": { label: "진행 중", dot: "#c9820f" },
+  "달성": { label: "달성", dot: "#0f8f6c" },
 };
 
 const CATEGORY_ORDER = [
@@ -141,15 +158,15 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_META = {
-  "💪🏻 건강/피트니스": { fg: "#4fd8b0", bg: "rgba(79,216,176,0.14)", label: "건강/피트니스", emoji: "🏃" },
-  "🍀 정신/마음": { fg: "#b8e05c", bg: "rgba(184,224,92,0.14)", label: "정신/마음", emoji: "🧘" },
-  "🩵 사랑/관계/가족": { fg: "#ff8fb3", bg: "rgba(255,143,179,0.14)", label: "사랑/관계/가족", emoji: "💛" },
-  "🏠 라이프 스타일": { fg: "#e0a458", bg: "rgba(224,164,88,0.14)", label: "라이프 스타일", emoji: "🏠" },
-  "🪙 자산관리": { fg: "#f0c419", bg: "rgba(240,196,25,0.14)", label: "자산관리", emoji: "💰" },
-  "💼 일/커리어": { fg: "#63b3ed", bg: "rgba(99,179,237,0.14)", label: "일/커리어", emoji: "💼" },
-  "✍🏻 예술/창작": { fg: "#b794f6", bg: "rgba(183,148,246,0.14)", label: "예술/창작", emoji: "🎨" },
-  "✈️ 여행/모험": { fg: "#ff8266", bg: "rgba(255,130,102,0.14)", label: "여행/모험", emoji: "✈️" },
-  "__NONE__": { fg: "#9a978c", bg: "rgba(154,151,140,0.14)", label: "기타", emoji: "⭐" },
+  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", label: "건강/피트니스", emoji: "🏃" },
+  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", label: "정신/마음", emoji: "🧘" },
+  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", label: "사랑/관계/가족", emoji: "💛" },
+  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", label: "라이프 스타일", emoji: "🏠" },
+  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", label: "자산관리", emoji: "💰" },
+  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", label: "일/커리어", emoji: "💼" },
+  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", label: "예술/창작", emoji: "🎨" },
+  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", label: "여행/모험", emoji: "✈️" },
+  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", label: "기타", emoji: "⭐" },
 };
 
 function esc(str) {
@@ -160,9 +177,7 @@ function monthsIndex(dateStr) {
   const [y, m] = dateStr.split("-").map(Number);
   return y * 12 + (m - 1);
 }
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let GRAPH = null;
 let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
@@ -309,18 +324,18 @@ function renderAll() {
     `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
     `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
 
-  const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(255,255,255,0.02);" : ""}"></div>`).join("");
+  const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(0,0,0,0.015);" : ""}"></div>`).join("");
 
-  const tickLines = ticks.map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#333846" stroke-width="1"/>`).join("");
-  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#ff5470" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#333846" stroke-width="1" stroke-dasharray="2 4"/>`;
+  const tickLines = ticks.map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("");
+  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>`;
 
   const edgePaths = edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const s = nodeById.get(e.source), t = nodeById.get(e.target);
     const d = edgePathD(s.x + NODE_W, s.y + NODE_H / 2, t.x, t.y + NODE_H / 2);
     const dashed = e.kind === "related" ? 'stroke-dasharray="4 4"' : "";
     const marker = e.kind === "sequence" ? 'marker-end="url(#arrowhead)"' : "";
-    return `<path d="${d}" fill="none" stroke="#5b6172" stroke-width="1.3" opacity="0.7" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+    return `<path d="${d}" fill="none" stroke="#b7b7ae" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
   const nodeDivs = layout.lanes.flatMap(l => l.nodes).map((n) => {
@@ -345,7 +360,7 @@ function renderAll() {
     ${laneBg}
     <svg width="${layout.totalWidth}" height="${layout.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
       <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#5b6172" stroke-width="1.5"/>
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#b7b7ae" stroke-width="1.5"/>
       </marker></defs>
       ${tickLines}${tbdDivider}${todayLine}${edgePaths}
     </svg>
@@ -404,7 +419,7 @@ function wireInteractions(nodeById) {
     if (!el) return;
     const x = parseFloat(el.style.left);
     scrollEl.scrollTo({ left: Math.max(0, x - scrollEl.clientWidth / 2), behavior: "smooth" });
-    el.style.outline = "2px solid #ff5470";
+    el.style.outline = "2px solid #d6304a";
     setTimeout(() => el.style.outline = "", 1600);
   }
   function goToday() {
@@ -428,8 +443,59 @@ function wireInteractions(nodeById) {
   setTimeout(goToday, 50);
 }
 
+function relationOptionsHtml(excludeId, alreadyIds) {
+  const taken = new Set(alreadyIds);
+  return GRAPH.nodes
+    .filter(n => n.id !== excludeId && !taken.has(n.id))
+    .sort((a, b) => a.title.localeCompare(b.title, "ko"))
+    .map(n => `<option value="${esc(n.id)}">${esc(n.title)}</option>`)
+    .join("");
+}
+
+function relationChipsHtml(ids, fieldName) {
+  return ids.map((id) => {
+    const n = GRAPH.nodes.find(x => x.id === id);
+    const title = n ? n.title : "(알 수 없음)";
+    return `<span class="rel-chip" data-rel-id="${esc(id)}">${esc(title)}<button type="button" class="rel-remove" data-field="${fieldName}" data-id="${esc(id)}">✕</button></span>`;
+  }).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>';
+}
+
+function renderBlocksHtml(blocks) {
+  if (!blocks.length) return '<span style="color:var(--ink-soft)">내용이 없어요.</span>';
+  let html = "";
+  let listOpen = null;
+  function closeList() { if (listOpen) { html += `</${listOpen}>`; listOpen = null; } }
+  for (const b of blocks) {
+    if (b.type === "bulleted_list_item") {
+      if (listOpen !== "ul") { closeList(); html += "<ul>"; listOpen = "ul"; }
+      html += `<li>${esc(b.text)}</li>`;
+      continue;
+    }
+    if (b.type === "numbered_list_item") {
+      if (listOpen !== "ol") { closeList(); html += "<ol>"; listOpen = "ol"; }
+      html += `<li>${esc(b.text)}</li>`;
+      continue;
+    }
+    closeList();
+    if (b.type === "heading_1") html += `<h3>${esc(b.text)}</h3>`;
+    else if (b.type === "heading_2") html += `<h4>${esc(b.text)}</h4>`;
+    else if (b.type === "heading_3") html += `<h5>${esc(b.text)}</h5>`;
+    else if (b.type === "divider") html += `<hr>`;
+    else if (b.type === "quote") html += `<blockquote>${esc(b.text)}</blockquote>`;
+    else if (b.type === "to_do") html += `<div>${b.checked ? "☑" : "☐"} ${esc(b.text)}</div>`;
+    else if (b.type === "code") html += `<pre><code>${esc(b.text)}</code></pre>`;
+    else if (b.type === "image") html += `<div><em>[이미지: ${esc(b.text)}]</em></div>`;
+    else if (b.text) html += `<p>${esc(b.text)}</p>`;
+  }
+  closeList();
+  return html;
+}
+
 function openModal(node) {
   const cat = CATEGORY_META[node.categories[0] ?? "__NONE__"];
+  let predecessors = [...(node.predecessors || [])];
+  let successors = [...(node.successors || [])];
+
   const overlay = document.createElement("div");
   overlay.className = "overlay";
   overlay.innerHTML = `
@@ -450,16 +516,94 @@ function openModal(node) {
         <label>메모</label>
         <textarea id="f-note">${esc(node.note ?? "")}</textarea>
       </div>
+      <div class="field">
+        <label>선행 목표</label>
+        <div class="rel-chips" id="pred-chips">${relationChipsHtml(predecessors, "predecessors")}</div>
+        <div class="rel-add">
+          <select id="pred-select"><option value="">추가할 목표 선택…</option>${relationOptionsHtml(node.id, predecessors)}</select>
+          <button type="button" class="btn" id="pred-add">추가</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>후속 목표</label>
+        <div class="rel-chips" id="succ-chips">${relationChipsHtml(successors, "successors")}</div>
+        <div class="rel-add">
+          <select id="succ-select"><option value="">추가할 목표 선택…</option>${relationOptionsHtml(node.id, successors)}</select>
+          <button type="button" class="btn" id="succ-add">추가</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>페이지 내용</label>
+        <div class="content-box" id="page-content">불러오는 중…</div>
+      </div>
       <div class="modal-msg" id="f-msg"></div>
       <div class="modal-actions">
-        <button class="btn" id="f-cancel">닫기</button>
-        <button class="btn primary" id="f-save">저장</button>
+        <button class="btn danger" id="f-delete">삭제</button>
+        <div class="modal-actions-right">
+          <button class="btn" id="f-cancel">닫기</button>
+          <button class="btn primary" id="f-save">저장</button>
+        </div>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
+
+  fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id) + "/content")
+    .then(r => r.json())
+    .then(data => {
+      const box = overlay.querySelector("#page-content");
+      if (data.error) { box.textContent = "내용을 불러오지 못했어요."; return; }
+      box.innerHTML = renderBlocksHtml(data.blocks || []);
+    })
+    .catch(() => { overlay.querySelector("#page-content").textContent = "내용을 불러오지 못했어요."; });
+
+  function refreshRelChips() {
+    overlay.querySelector("#pred-chips").innerHTML = relationChipsHtml(predecessors, "predecessors");
+    overlay.querySelector("#succ-chips").innerHTML = relationChipsHtml(successors, "successors");
+    overlay.querySelector("#pred-select").innerHTML = '<option value="">추가할 목표 선택…</option>' + relationOptionsHtml(node.id, predecessors);
+    overlay.querySelector("#succ-select").innerHTML = '<option value="">추가할 목표 선택…</option>' + relationOptionsHtml(node.id, successors);
+    overlay.querySelectorAll(".rel-remove").forEach(btn => btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      if (btn.dataset.field === "predecessors") predecessors = predecessors.filter(x => x !== id);
+      else successors = successors.filter(x => x !== id);
+      refreshRelChips();
+    }));
+  }
+  refreshRelChips();
+
+  overlay.querySelector("#pred-add").addEventListener("click", () => {
+    const sel = overlay.querySelector("#pred-select");
+    if (sel.value) { predecessors.push(sel.value); refreshRelChips(); }
+  });
+  overlay.querySelector("#succ-add").addEventListener("click", () => {
+    const sel = overlay.querySelector("#succ-select");
+    if (sel.value) { successors.push(sel.value); refreshRelChips(); }
+  });
+
   overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
   overlay.querySelector("#f-cancel").addEventListener("click", () => overlay.remove());
+
+  overlay.querySelector("#f-delete").addEventListener("click", async () => {
+    if (!confirm(`"${node.title}"을(를) 삭제할까요? (노션에서 휴지통으로 이동돼요, 복구 가능)`)) return;
+    const msg = overlay.querySelector("#f-msg");
+    msg.textContent = "삭제 중...";
+    msg.className = "modal-msg";
+    try {
+      const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: true }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      overlay.remove();
+      load();
+    } catch (err) {
+      msg.textContent = "삭제 실패: " + err.message;
+      msg.className = "modal-msg err";
+    }
+  });
+
   overlay.querySelector("#f-save").addEventListener("click", async () => {
     const status = overlay.querySelector("#f-status").value;
     const targetDate = overlay.querySelector("#f-date").value || null;
@@ -471,17 +615,13 @@ function openModal(node) {
       const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, targetDate, note }),
+        body: JSON.stringify({ status, targetDate, note, predecessors, successors }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       msg.textContent = "저장했어요.";
       msg.className = "modal-msg ok";
-      Object.assign(node, { status, targetDate, note });
-      const idx = GRAPH.nodes.findIndex(n => n.id === node.id);
-      if (idx !== -1) GRAPH.nodes[idx] = { ...GRAPH.nodes[idx], status, targetDate, note };
-      renderAll();
-      setTimeout(() => overlay.remove(), 500);
+      setTimeout(() => { overlay.remove(); load(); }, 400);
     } catch (err) {
       msg.textContent = "저장 실패: " + err.message;
       msg.className = "modal-msg err";
