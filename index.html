@@ -10,7 +10,7 @@
   :root {
     --paper:#ffffff; --paper-raised:#f7f7f5; --paper-hover:#eeeeec;
     --ink:#1a1a18; --ink-soft:#6b6b66; --line:#e2e2de;
-    --accent:#d6304a; --accent-soft:rgba(214,48,74,0.08);
+    --accent:#d6304a;
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; }
@@ -23,47 +23,60 @@
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-  .chip { font-size:12px; border:1px solid #c9820f; color:#8a5a0a; background:#fbf1de; border-radius:999px; padding:4px 10px; cursor:pointer; }
-  .chip:hover { background:#f5e2bd; }
-  #today-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; margin-left:auto; }
-  #today-btn:hover { background:var(--paper-hover); }
+  .goal-chip { font-size:12px; border:1px solid #c9820f; color:#8a5a0a; background:#fbf1de; border-radius:999px; padding:4px 10px; cursor:pointer; }
+  .goal-chip:hover { background:#f5e2bd; }
+  .ctrl-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; }
+  .ctrl-btn:hover { background:var(--paper-hover); }
+  .ctrl-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  #right-controls { display:flex; gap:6px; margin-left:auto; }
   .layout { display:flex; }
   aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; align-self:flex-start; position:sticky; top:97px; }
   .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
   .section { margin-bottom:18px; }
-  .row { display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer; }
-  .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
   #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
+  .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.4; background:var(--paper); transition:opacity .15s; }
+  .filter-chip:has(input:checked) { opacity:1; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
+  .filter-chip input { position:absolute; opacity:0; width:0; height:0; }
+  .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
   .main { flex:1; min-width:0; }
   .lane-labels-wrap { display:flex; }
   .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
   .lane-label { position:absolute; width:100%; display:flex; flex-direction:column; justify-content:center; padding:4px 10px; font-size:12px; font-weight:500; }
   .lane-count { font-size:10px; color:var(--ink-soft); font-weight:400; }
   .timeline-scroll { flex:1; overflow-x:auto; position:relative; }
-  .tick-row { position:sticky; top:0; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
+  .tick-row { position:sticky; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
   .tick { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); transform:translateX(2px); }
   .today-label { position:absolute; top:5px; font-size:11px; color:var(--accent); font-weight:500; transform:translateX(4px); }
   .tbd-label { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); }
+  .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
-  .node { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:2px; border:1px solid; border-radius:8px; padding:6px 8px; cursor:pointer; overflow:hidden; background-clip:padding-box; }
+  .node { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:3px; border:1px solid; border-radius:8px; padding:6px 8px; cursor:pointer; overflow:hidden; background-clip:padding-box; }
   .node:hover { filter:brightness(0.97); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
-  .node-status { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--ink-soft); }
-  .node-status.overdue-tag { color:var(--accent); }
+  .node.selected { box-shadow:0 0 0 2px var(--ink); }
+  .status-chip { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:500; border-radius:999px; padding:1px 7px; width:fit-content; }
+  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); }
   .node-title { font-size:12px; font-weight:500; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .extra-cats { display:flex; gap:3px; margin-top:1px; }
+  .extra-cats span { width:6px; height:6px; border-radius:999px; display:inline-block; }
   .hidden { display:none !important; }
   details { margin:20px 24px; }
   summary { cursor:pointer; font-size:13px; color:var(--ink-soft); padding:8px 0; }
   .pills { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0 20px; }
-  .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; background:var(--paper-raised); }
+  .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; background:var(--paper-raised); cursor:pointer; }
   .pill-date { opacity:0.6; margin-left:4px; }
   #loading, #error { padding:60px 24px; text-align:center; color:var(--ink-soft); }
   #error { color:var(--accent); }
   .overlay { position:fixed; inset:0; background:rgba(20,20,18,0.4); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
   .modal { width:460px; max-width:92vw; max-height:88vh; overflow-y:auto; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.14); }
+  .modal-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
   .modal h2 { font-size:17px; margin:0 0 4px; }
   .modal .meta { font-size:12px; color:var(--ink-soft); margin-bottom:14px; }
+  .nav-row { display:flex; gap:6px; flex-shrink:0; }
+  .nav-row button { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); border-radius:6px; padding:4px 8px; cursor:pointer; }
+  .nav-row button:disabled { opacity:0.35; cursor:default; }
   .field { margin-bottom:14px; }
   .field label { display:block; font-size:11px; color:var(--ink-soft); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px; }
   .field select, .field input, .field textarea {
@@ -120,11 +133,11 @@
     </div>
     <div class="section">
       <div class="section-title">상태</div>
-      <div id="status-filters"></div>
+      <div class="filter-chips" id="status-filters"></div>
     </div>
     <div class="section">
       <div class="section-title">카테고리</div>
-      <div id="category-filters"></div>
+      <div class="filter-chips" id="category-filters"></div>
     </div>
   </aside>
   <div class="main">
@@ -143,13 +156,13 @@
 </details>
 
 <script>
-const NODE_W = 156, NODE_H = 60, ROW_GAP = 8, LANE_PAD = 14;
-const PX_PER_MONTH = 30, TIMELINE_START = 160;
+const NODE_W = 156, NODE_H = 64, ROW_GAP = 8, LANE_PAD = 14;
+const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", dot: "#9a9a94" },
-  "진행 중": { label: "진행 중", dot: "#c9820f" },
-  "달성": { label: "달성", dot: "#0f8f6c" },
+  "시작 전": { label: "시작 전", fg: "#6b6b66", bg: "#f1f1ee" },
+  "진행 중": { label: "진행 중", fg: "#a3630a", bg: "#fdf1de" },
+  "달성": { label: "달성", fg: "#0f8f6c", bg: "#e6f7f1" },
 };
 
 const CATEGORY_ORDER = [
@@ -158,15 +171,15 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_META = {
-  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", label: "건강/피트니스", emoji: "🏃" },
-  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", label: "정신/마음", emoji: "🧘" },
-  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", label: "사랑/관계/가족", emoji: "💛" },
-  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", label: "라이프 스타일", emoji: "🏠" },
-  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", label: "자산관리", emoji: "💰" },
-  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", label: "일/커리어", emoji: "💼" },
-  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", label: "예술/창작", emoji: "🎨" },
-  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", label: "여행/모험", emoji: "✈️" },
-  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", label: "기타", emoji: "⭐" },
+  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", bg2: "#c3ecdc", label: "건강/피트니스", emoji: "🏃" },
+  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", bg2: "#dcecc0", label: "정신/마음", emoji: "🧘" },
+  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", bg2: "#f8d3e0", label: "사랑/관계/가족", emoji: "💛" },
+  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", bg2: "#f2ddb9", label: "라이프 스타일", emoji: "🏠" },
+  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", bg2: "#f5e8ad", label: "자산관리", emoji: "💰" },
+  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", bg2: "#cce3f7", label: "일/커리어", emoji: "💼" },
+  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", bg2: "#e0d0f7", label: "예술/창작", emoji: "🎨" },
+  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", bg2: "#f7d2c2", label: "여행/모험", emoji: "✈️" },
+  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", bg2: "#dedcd5", label: "기타", emoji: "⭐" },
 };
 
 function esc(str) {
@@ -180,6 +193,8 @@ function monthsIndex(dateStr) {
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let GRAPH = null;
+let VIEW_MODE = "time";
+let FULL_ORDER = [];
 let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
 
 function ensureWorkerUrl() {
@@ -217,7 +232,8 @@ async function load() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     GRAPH = data;
-    renderAll();
+    renderStatic();
+    rerenderCanvas();
     document.getElementById("loading").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("achieved-wrap").classList.remove("hidden");
@@ -228,22 +244,31 @@ async function load() {
   }
 }
 
-function buildLayout(nodes) {
-  const active = nodes.filter((n) => n.status !== "달성");
-  const dated = active.filter((n) => n.targetDate);
-  const monthVals = dated.map((n) => monthsIndex(n.targetDate));
-  const minM = monthVals.length ? Math.min(...monthVals) - 1 : monthsIndex("2026-01-01");
-  const maxM = monthVals.length ? Math.max(...monthVals) + 1 : monthsIndex("2026-12-01");
-  const timelineWidth = (maxM - minM) * PX_PER_MONTH;
-  const tbdX = TIMELINE_START + timelineWidth + 70;
+function buildLayout(nodes, mode) {
+  let xFor, tbdX, todayX, minM, maxM, hasTimeAxis;
 
-  function xFor(n) { return n.targetDate ? TIMELINE_START + (monthsIndex(n.targetDate) - minM) * PX_PER_MONTH : tbdX; }
+  if (mode === "sequence") {
+    hasTimeAxis = false;
+    const dated = nodes.filter(n => n.targetDate).sort((a, b) => a.targetDate.localeCompare(b.targetDate));
+    const undated = nodes.filter(n => !n.targetDate).sort((a, b) => a.title.localeCompare(b.title, "ko"));
+    const combined = [...dated, ...undated];
+    const rank = new Map(combined.map((n, i) => [n.id, i]));
+    xFor = (n) => TIMELINE_START + rank.get(n.id) * SEQ_STEP;
+    tbdX = null; todayX = null; minM = null; maxM = null;
+  } else {
+    hasTimeAxis = true;
+    const dated = nodes.filter(n => n.targetDate);
+    const monthVals = dated.map(n => monthsIndex(n.targetDate));
+    minM = monthVals.length ? Math.min(...monthVals) - 1 : monthsIndex("2026-01-01");
+    maxM = monthVals.length ? Math.max(...monthVals) + 1 : monthsIndex("2026-12-01");
+    tbdX = TIMELINE_START + (maxM - minM) * PX_PER_MONTH + 70;
+    xFor = (n) => n.targetDate ? TIMELINE_START + (monthsIndex(n.targetDate) - minM) * PX_PER_MONTH : tbdX;
+    const todayM = monthsIndex(todayStr());
+    todayX = TIMELINE_START + (todayM - minM) * PX_PER_MONTH;
+  }
 
-  const todayM = monthsIndex(todayStr());
-  const todayX = TIMELINE_START + (todayM - minM) * PX_PER_MONTH;
-
-  const byLane = new Map(CATEGORY_ORDER.map((c) => [c, []]));
-  for (const n of active) {
+  const byLane = new Map(CATEGORY_ORDER.map(c => [c, []]));
+  for (const n of nodes) {
     const primary = n.categories[0] ?? "__NONE__";
     const lane = byLane.has(primary) ? primary : "__NONE__";
     byLane.get(lane).push(n);
@@ -257,7 +282,7 @@ function buildLayout(nodes) {
     const placed = [];
     for (const n of laneNodes) {
       const x = xFor(n);
-      let track = tracks.findIndex((end) => x > end + 10);
+      let track = tracks.findIndex(end => x > end + 10);
       if (track === -1) { track = tracks.length; tracks.push(0); }
       tracks[track] = x + NODE_W;
       const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
@@ -270,7 +295,15 @@ function buildLayout(nodes) {
     cursorY += laneHeight + 4;
   }
 
-  return { lanes, totalWidth: tbdX + NODE_W + 60, totalHeight: cursorY + 20, todayX, tbdX, minM, maxM };
+  let totalWidth;
+  if (mode === "sequence") {
+    const maxX = Math.max(TIMELINE_START, ...lanes.flatMap(l => l.nodes.map(n => n.x)));
+    totalWidth = maxX + NODE_W + 60;
+  } else {
+    totalWidth = tbdX + NODE_W + 60;
+  }
+
+  return { lanes, totalWidth, totalHeight: cursorY + 20, todayX, tbdX, minM, maxM, hasTimeAxis };
 }
 
 function monthTicks(minM, maxM) {
@@ -287,14 +320,30 @@ function edgePathD(x1, y1, x2, y2) {
   return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 }
 
-function renderAll() {
-  const { nodes, edges } = GRAPH;
-  const layout = buildLayout(nodes);
-  const achieved = nodes.filter((n) => n.status === "달성").sort((a, b) => (b.targetDate ?? "").localeCompare(a.targetDate ?? ""));
-  const active = nodes.filter((n) => n.status !== "달성");
-  const currentGoals = nodes.filter((n) => n.current);
-  const nodeById = new Map();
-  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
+function getFilterState() {
+  const search = document.getElementById("search");
+  const statusCbs = Array.from(document.querySelectorAll(".status-cb"));
+  const catCbs = Array.from(document.querySelectorAll(".cat-cb"));
+  return {
+    q: search ? search.value.trim().toLowerCase() : "",
+    statuses: new Set(statusCbs.filter(c => c.checked).map(c => c.value)),
+    categories: new Set(catCbs.filter(c => c.checked).map(c => c.value)),
+  };
+}
+
+function passesFilter(n, f) {
+  const cats = n.categories.length ? n.categories : ["__NONE__"];
+  const catOk = cats.some(c => f.categories.has(c));
+  const statusOk = f.statuses.has(n.status);
+  const searchOk = !f.q || n.title.toLowerCase().includes(f.q);
+  return catOk && statusOk && searchOk;
+}
+
+function renderStatic() {
+  const nodes = GRAPH.nodes;
+  const achieved = nodes.filter(n => n.status === "달성").sort((a, b) => (b.targetDate ?? "").localeCompare(a.targetDate ?? ""));
+  const active = nodes.filter(n => n.status !== "달성");
+  const currentGoals = nodes.filter(n => n.current);
 
   document.getElementById("summary").innerHTML = `
     <span>전체 <b>${nodes.length}개</b></span>
@@ -304,9 +353,57 @@ function renderAll() {
   `;
   document.getElementById("current-row").innerHTML = `
     <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
-    ${currentGoals.map(n => `<button class="chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
-    <button id="today-btn">오늘로 이동</button>
+    ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
+    <div id="right-controls">
+      <button class="ctrl-btn" id="mode-btn"></button>
+      <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
+    </div>
   `;
+
+  document.getElementById("achieved-summary").textContent = `달성한 목표 ${achieved.length}개 보기`;
+  document.getElementById("achieved-pills").innerHTML = achieved.map((n) => {
+    const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
+    return `<span class="pill" data-goto-achieved="${esc(n.id)}" style="border-color:${cat.fg};color:${cat.fg}">
+      ${n.icon || cat.emoji} ${esc(n.title)} <span class="pill-date">${esc(n.targetDate ?? "")}</span>
+    </span>`;
+  }).join("");
+
+  const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
+  document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).filter(([k]) => k !== "달성").map(([key, meta]) =>
+    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" checked><span class="dot" style="background:${meta.fg}"></span>${meta.label}</label>`
+  ).join("");
+  document.getElementById("category-filters").innerHTML = presentCats.map((c) => {
+    const meta = CATEGORY_META[c];
+    return `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="cat-cb" value="${esc(c)}" checked>${meta.emoji} ${esc(meta.label)}</label>`;
+  }).join("");
+
+  document.querySelectorAll(".status-cb, .cat-cb").forEach(cb => cb.addEventListener("change", () => rerenderCanvas()));
+  document.getElementById("search").addEventListener("input", () => rerenderCanvas());
+  document.getElementById("mode-btn").addEventListener("click", () => {
+    VIEW_MODE = VIEW_MODE === "time" ? "sequence" : "time";
+    rerenderCanvas();
+  });
+
+  document.querySelectorAll("[data-goto]").forEach(btn => btn.addEventListener("click", () => goTo(btn.dataset.goto)));
+  document.querySelectorAll("[data-goto-achieved]").forEach(el => el.addEventListener("click", () => {
+    const n = GRAPH.nodes.find(x => x.id === el.dataset.gotoAchieved);
+    if (n) openModal(n);
+  }));
+}
+
+function rerenderCanvas() {
+  const f = getFilterState();
+  const activeAll = GRAPH.nodes.filter(n => n.status !== "달성");
+  const filtered = activeAll.filter(n => passesFilter(n, f));
+  const layout = buildLayout(filtered, VIEW_MODE);
+  const nodeById = new Map();
+  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
+
+  const fullLayout = buildLayout(activeAll, VIEW_MODE);
+  FULL_ORDER = fullLayout.lanes.flatMap(l => l.nodes.map(n => n.id));
+
+  const modeBtn = document.getElementById("mode-btn");
+  if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "시간순 보기";
 
   document.getElementById("lane-labels").style.height = layout.totalHeight + "px";
   document.getElementById("lane-labels").innerHTML = layout.lanes.map((lane) => {
@@ -317,20 +414,25 @@ function renderAll() {
     </div>`;
   }).join("");
 
-  const ticks = monthTicks(layout.minM, layout.maxM);
-  document.getElementById("tick-row").style.width = layout.totalWidth + "px";
-  document.getElementById("tick-row").innerHTML =
-    ticks.map(t => `<div class="tick" style="left:${t.x}px">${esc(t.label)}</div>`).join("") +
-    `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
-    `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
+  const tickRow = document.getElementById("tick-row");
+  if (layout.hasTimeAxis) {
+    const ticks = monthTicks(layout.minM, layout.maxM);
+    tickRow.style.width = layout.totalWidth + "px";
+    tickRow.innerHTML =
+      ticks.map(t => `<div class="tick" style="left:${t.x}px">${esc(t.label)}</div>`).join("") +
+      `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
+      `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
+  } else {
+    tickRow.style.width = layout.totalWidth + "px";
+    tickRow.innerHTML = `<div class="seq-label">시간축 없이 순서대로 표시 중</div>`;
+  }
 
   const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(0,0,0,0.015);" : ""}"></div>`).join("");
+  const tickLines = layout.hasTimeAxis ? monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("") : "";
+  const todayLine = layout.hasTimeAxis ? `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>` : "";
+  const tbdDivider = layout.hasTimeAxis ? `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>` : "";
 
-  const tickLines = ticks.map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("");
-  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>`;
-
-  const edgePaths = edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
+  const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const s = nodeById.get(e.source), t = nodeById.get(e.target);
     const d = edgePathD(s.x + NODE_W, s.y + NODE_H / 2, t.x, t.y + NODE_H / 2);
     const dashed = e.kind === "related" ? 'stroke-dasharray="4 4"' : "";
@@ -342,15 +444,19 @@ function renderAll() {
     const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
     const meta = STATUS_META[n.status];
     const emoji = n.icon || cat.emoji;
+    const bg = n.status === "진행 중" ? cat.bg2 : cat.bg;
+    const extraCats = n.categories.slice(1);
     const statusHtml = n.overdue
-      ? `<div class="node-status overdue-tag"><span class="dot" style="background:${STATUS_META["시작 전"].dot}"></span>지연됨</div>`
-      : `<div class="node-status"><span class="dot" style="background:${meta.dot}"></span>${meta.label}</div>`;
-    return `<div class="node ${n.overdue ? "overdue" : ""}" data-id="${esc(n.id)}"
-      data-status="${esc(n.status)}" data-categories="${esc(n.categories.join(","))}" data-current="${n.current ? 1 : 0}"
-      data-title="${esc(n.title.toLowerCase())}"
-      style="left:${n.x}px;top:${n.y}px;width:${NODE_W}px;height:${NODE_H}px;background:${cat.bg};border-color:${cat.fg};">
+      ? `<span class="status-chip overdue-tag">지연됨</span>`
+      : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg}">${meta.label}</span>`;
+    const extraDots = extraCats.length
+      ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c]||CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
+    const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
+    return `<div class="node ${n.overdue ? "overdue" : ""}" data-id="${esc(n.id)}"${titleAttr}
+      style="left:${n.x}px;top:${n.y}px;width:${NODE_W}px;height:${NODE_H}px;background:${bg};border-color:${cat.fg};">
       ${statusHtml}
       <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
+      ${extraDots}
     </div>`;
   }).join("");
 
@@ -367,80 +473,50 @@ function renderAll() {
     ${nodeDivs}
   `;
 
-  document.getElementById("achieved-summary").textContent = `달성한 목표 ${achieved.length}개 보기`;
-  document.getElementById("achieved-pills").innerHTML = achieved.map((n) => {
-    const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
-    return `<span class="pill" data-goto-achieved="${esc(n.id)}" style="border-color:${cat.fg};color:${cat.fg};cursor:pointer;">
-      ${n.icon || cat.emoji} ${esc(n.title)} <span class="pill-date">${esc(n.targetDate ?? "")}</span>
-    </span>`;
-  }).join("");
-
-  document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
-    `<label class="row"><input type="checkbox" class="status-cb" value="${esc(key)}" ${key === "달성" ? "" : "checked"}><span class="dot" style="background:${meta.dot}"></span>${meta.label}</label>`
-  ).join("");
-  document.getElementById("category-filters").innerHTML = CATEGORY_ORDER.filter(c => layout.lanes.some(l => l.cat === c)).map((c) =>
-    `<label class="row"><input type="checkbox" class="cat-cb" value="${esc(c)}" checked>${CATEGORY_META[c].emoji} ${esc(CATEGORY_META[c].label)}</label>`
-  ).join("");
-
-  wireInteractions(nodeById);
+  wireCanvasInteractions();
+  syncTickRowTop();
 }
 
-function wireInteractions(nodeById) {
-  const search = document.getElementById("search");
-  const statusCbs = Array.from(document.querySelectorAll(".status-cb"));
-  const catCbs = Array.from(document.querySelectorAll(".cat-cb"));
+function syncTickRowTop() {
+  const tb = document.getElementById("topbar");
+  const tickRow = document.getElementById("tick-row");
+  if (tb && tickRow) tickRow.style.top = tb.offsetHeight + "px";
+}
+window.addEventListener("resize", syncTickRowTop);
+
+function wireCanvasInteractions() {
   const nodeEls = Array.from(document.querySelectorAll(".node"));
-  const edgeEls = Array.from(document.querySelectorAll("svg path[data-source]"));
-  const scrollEl = document.getElementById("timeline-scroll");
-
-  function applyFilters() {
-    const q = search.value.trim().toLowerCase();
-    const activeStatus = new Set(statusCbs.filter(c => c.checked).map(c => c.value));
-    const activeCat = new Set(catCbs.filter(c => c.checked).map(c => c.value));
-    nodeEls.forEach((n) => {
-      const cats = n.dataset.categories ? n.dataset.categories.split(",") : ["__NONE__"];
-      const catOk = cats.some(c => activeCat.has(c || "__NONE__"));
-      const statusOk = activeStatus.has(n.dataset.status);
-      const searchOk = !q || n.dataset.title.includes(q);
-      n.classList.toggle("hidden", !(catOk && statusOk && searchOk));
-    });
-    edgeEls.forEach((e) => {
-      const s = nodeEls.find(n => n.dataset.id === e.dataset.source);
-      const t = nodeEls.find(n => n.dataset.id === e.dataset.target);
-      e.classList.toggle("hidden", !(s && t && !s.classList.contains("hidden") && !t.classList.contains("hidden")));
-    });
-  }
-  search.addEventListener("input", applyFilters);
-  statusCbs.forEach(c => c.addEventListener("change", applyFilters));
-  catCbs.forEach(c => c.addEventListener("change", applyFilters));
-
-  function goTo(id) {
-    const el = nodeEls.find(n => n.dataset.id === id);
-    if (!el) return;
-    const x = parseFloat(el.style.left);
-    scrollEl.scrollTo({ left: Math.max(0, x - scrollEl.clientWidth / 2), behavior: "smooth" });
-    el.style.outline = "2px solid #d6304a";
-    setTimeout(() => el.style.outline = "", 1600);
-  }
-  function goToday() {
-    const x = document.querySelector(".today-label");
-    if (!x) return;
-    scrollEl.scrollTo({ left: Math.max(0, parseFloat(x.style.left) - scrollEl.clientWidth / 2), behavior: "smooth" });
-  }
-  document.getElementById("today-btn").addEventListener("click", goToday);
-  document.querySelectorAll("[data-goto]").forEach(btn => btn.addEventListener("click", () => goTo(btn.dataset.goto)));
-  document.querySelectorAll("[data-goto-achieved]").forEach(el => el.addEventListener("click", () => {
-    const n = GRAPH.nodes.find(x => x.id === el.dataset.gotoAchieved);
-    if (n) openModal(n);
-  }));
   nodeEls.forEach((el) => {
     el.addEventListener("click", () => {
+      nodeEls.forEach(x => x.classList.remove("selected"));
+      el.classList.add("selected");
+    });
+    el.addEventListener("dblclick", () => {
       const n = GRAPH.nodes.find(x => x.id === el.dataset.id);
       if (n) openModal(n);
     });
   });
 
-  setTimeout(goToday, 50);
+  document.getElementById("today-btn").addEventListener("click", goToday);
+}
+
+function goToday() {
+  const x = document.querySelector(".today-label");
+  const scrollEl = document.getElementById("timeline-scroll");
+  if (!x) return;
+  scrollEl.scrollTo({ left: Math.max(0, parseFloat(x.style.left) - scrollEl.clientWidth / 2), behavior: "smooth" });
+}
+
+function goTo(id) {
+  const el = document.querySelector(`.node[data-id="${CSS.escape(id)}"]`);
+  if (!el) {
+    const n = GRAPH.nodes.find(x => x.id === id);
+    if (n) openModal(n);
+    return;
+  }
+  el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+  el.classList.add("selected");
+  setTimeout(() => el.classList.remove("selected"), 1600);
 }
 
 function relationOptionsHtml(excludeId, alreadyIds) {
@@ -495,13 +571,22 @@ function openModal(node) {
   const cat = CATEGORY_META[node.categories[0] ?? "__NONE__"];
   let predecessors = [...(node.predecessors || [])];
   let successors = [...(node.successors || [])];
+  const navIdx = FULL_ORDER.indexOf(node.id);
 
   const overlay = document.createElement("div");
   overlay.className = "overlay";
   overlay.innerHTML = `
     <div class="modal">
-      <h2>${node.icon || cat.emoji} ${esc(node.title)}</h2>
-      <div class="meta">${esc(cat.label)} · <a class="open-link" href="${esc(node.url)}" target="_blank" rel="noopener">노션에서 열기 ↗</a></div>
+      <div class="modal-top">
+        <div>
+          <h2>${node.icon || cat.emoji} ${esc(node.title)}</h2>
+          <div class="meta">${esc(cat.label)} · <a class="open-link" href="${esc(node.url)}" target="_blank" rel="noopener">노션에서 열기 ↗</a></div>
+        </div>
+        <div class="nav-row">
+          <button id="nav-prev" ${navIdx <= 0 ? "disabled" : ""}>◀ 이전</button>
+          <button id="nav-next" ${navIdx === -1 || navIdx >= FULL_ORDER.length - 1 ? "disabled" : ""}>다음 ▶</button>
+        </div>
+      </div>
       <div class="field">
         <label>상태</label>
         <select id="f-status">
@@ -582,6 +667,16 @@ function openModal(node) {
 
   overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
   overlay.querySelector("#f-cancel").addEventListener("click", () => overlay.remove());
+
+  function goNav(delta) {
+    const newIdx = navIdx + delta;
+    if (newIdx < 0 || newIdx >= FULL_ORDER.length) return;
+    const n = GRAPH.nodes.find(x => x.id === FULL_ORDER[newIdx]);
+    overlay.remove();
+    if (n) openModal(n);
+  }
+  overlay.querySelector("#nav-prev").addEventListener("click", () => goNav(-1));
+  overlay.querySelector("#nav-next").addEventListener("click", () => goNav(1));
 
   overlay.querySelector("#f-delete").addEventListener("click", async () => {
     if (!confirm(`"${node.title}"을(를) 삭제할까요? (노션에서 휴지통으로 이동돼요, 복구 가능)`)) return;
