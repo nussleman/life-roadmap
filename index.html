@@ -13,10 +13,11 @@
     --accent:#d6304a;
   }
   * { box-sizing: border-box; }
-  html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; }
+  html, body { margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; overflow:hidden; }
   h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; }
   a { color: inherit; }
-  #topbar { position:sticky; top:0; z-index:30; background:var(--paper); border-bottom:1px solid var(--line); }
+  body { display:flex; flex-direction:column; }
+  #topbar { flex-shrink:0; background:var(--paper); border-bottom:1px solid var(--line); }
   .banner { padding:6px 24px; font-size:11px; color:var(--ink-soft); border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; background:var(--paper-raised); }
   .banner button { font-size:11px; background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
   header { padding:14px 24px 12px; }
@@ -29,11 +30,12 @@
   .ctrl-btn:hover { background:var(--paper-hover); }
   .ctrl-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
   #right-controls { display:flex; gap:6px; margin-left:auto; }
-  .layout { display:flex; }
-  aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; align-self:flex-start; position:sticky; top:var(--topbar-h, 100px); }
+  .layout { display:flex; flex:1; min-height:0; }
+  aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
   .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
   .section { margin-bottom:18px; }
   #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
+  #period-select { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:12px; }
   .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
   .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.4; background:var(--paper); transition:opacity .15s; }
   .filter-chip:has(input:checked) { opacity:1; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
@@ -42,13 +44,13 @@
   .filter-chip.period-chip { opacity:0.4; }
   .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
   .node.is-achieved { opacity:0.55; }
-  .main { flex:1; min-width:0; }
-  .lane-labels-wrap { display:flex; }
+  .main { flex:1; min-width:0; height:100%; display:flex; flex-direction:column; min-height:0; }
+  .lane-labels-wrap { display:flex; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; position:relative; }
   .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
   .lane-label { position:absolute; width:100%; display:flex; flex-direction:column; justify-content:center; padding:4px 10px; font-size:12px; font-weight:500; }
   .lane-count { font-size:10px; color:var(--ink-soft); font-weight:400; }
-  .timeline-scroll { flex:1; overflow-x:auto; position:relative; }
-  .tick-row { position:sticky; top:var(--topbar-h, 100px); height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
+  .timeline-scroll { flex:1; overflow-x:auto; overflow-y:visible; position:relative; }
+  .tick-row { position:sticky; top:0; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
   .tick { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); transform:translateX(2px); }
   .today-label { position:absolute; top:5px; font-size:11px; color:var(--accent); font-weight:500; transform:translateX(4px); }
   .tbd-label { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); }
@@ -140,7 +142,7 @@
     </div>
     <div class="section">
       <div class="section-title">시기</div>
-      <div class="filter-chips" id="period-filters"></div>
+      <select id="period-select"></select>
     </div>
     <div class="section">
       <div class="section-title">카테고리</div>
@@ -216,14 +218,15 @@ function periodLabel(key) {
   return `${y} ${h === "1" ? "상반기" : "하반기"}`;
 }
 function computePeriods() {
-  const dated = GRAPH.nodes.filter(n => n.targetDate);
-  if (!dated.length) return ["TBD"];
-  const years = dated.map(n => Number(n.targetDate.slice(0, 4)));
-  const minY = Math.min(...years), maxY = Math.max(...years);
-  const periods = [];
-  for (let y = minY; y <= maxY; y++) { periods.push(`${y}-H1`); periods.push(`${y}-H2`); }
-  periods.push("TBD");
-  return periods;
+  const counts = new Map();
+  for (const n of GRAPH.nodes) {
+    const key = periodKey(n.targetDate);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const keys = Array.from(counts.keys()).filter(k => k !== "TBD");
+  keys.sort();
+  if (counts.has("TBD")) keys.push("TBD");
+  return keys;
 }
 
 function ensureWorkerUrl() {
@@ -278,11 +281,6 @@ function buildLayout(nodes, mode) {
 
   if (mode === "sequence") {
     hasTimeAxis = false;
-    const dated = nodes.filter(n => n.targetDate).sort((a, b) => a.targetDate.localeCompare(b.targetDate));
-    const undated = nodes.filter(n => !n.targetDate).sort((a, b) => a.title.localeCompare(b.title, "ko"));
-    const combined = [...dated, ...undated];
-    const rank = new Map(combined.map((n, i) => [n.id, i]));
-    xFor = (n) => TIMELINE_START + rank.get(n.id) * SEQ_STEP;
     tbdX = null; todayX = null; minM = null; maxM = null;
   } else {
     hasTimeAxis = true;
@@ -306,17 +304,28 @@ function buildLayout(nodes, mode) {
   const lanes = [];
   let cursorY = 0;
   for (const cat of CATEGORY_ORDER) {
-    const laneNodes = byLane.get(cat).slice().sort((a, b) => xFor(a) - xFor(b));
+    let laneNodes;
+    if (mode === "sequence") {
+      // Per-lane logical order only — no date-proportional spacing, no cross-lane gaps.
+      laneNodes = byLane.get(cat).slice().sort((a, b) => {
+        if (a.targetDate && b.targetDate) return a.targetDate.localeCompare(b.targetDate);
+        if (a.targetDate) return -1;
+        if (b.targetDate) return 1;
+        return a.title.localeCompare(b.title, "ko");
+      });
+    } else {
+      laneNodes = byLane.get(cat).slice().sort((a, b) => xFor(a) - xFor(b));
+    }
     const tracks = [];
     const placed = [];
-    for (const n of laneNodes) {
-      const x = xFor(n);
+    laneNodes.forEach((n, idx) => {
+      const x = mode === "sequence" ? TIMELINE_START + idx * SEQ_STEP : xFor(n);
       let track = tracks.findIndex(end => x > end + 10);
       if (track === -1) { track = tracks.length; tracks.push(0); }
       tracks[track] = x + NODE_W;
       const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
       placed.push({ ...n, x, subrow: track, overdue });
-    }
+    });
     if (placed.length === 0) continue;
     const laneHeight = Math.max(1, tracks.length) * (NODE_H + ROW_GAP) + LANE_PAD * 2;
     for (const p of placed) p.y = cursorY + LANE_PAD + p.subrow * (NODE_H + ROW_GAP);
@@ -408,14 +417,13 @@ function renderStatic() {
   }).join("");
 
   const periods = computePeriods();
-  document.getElementById("period-filters").innerHTML =
-    `<button class="filter-chip period-chip active" data-period="">전체</button>` +
-    periods.map(p => `<button class="filter-chip period-chip" data-period="${esc(p)}">${esc(periodLabel(p))}</button>`).join("");
-  document.querySelectorAll(".period-chip").forEach(btn => btn.addEventListener("click", () => {
-    ACTIVE_PERIOD = btn.dataset.period || null;
-    document.querySelectorAll(".period-chip").forEach(b => b.classList.toggle("active", b.dataset.period === (btn.dataset.period || "")));
+  document.getElementById("period-select").innerHTML =
+    `<option value="">전체</option>` +
+    periods.map(p => `<option value="${esc(p)}">${esc(periodLabel(p))}</option>`).join("");
+  document.getElementById("period-select").addEventListener("change", (e) => {
+    ACTIVE_PERIOD = e.target.value || null;
     rerenderCanvas();
-  }));
+  });
 
   document.querySelectorAll(".status-cb, .cat-cb").forEach(cb => cb.addEventListener("change", () => rerenderCanvas()));
   document.getElementById("search").addEventListener("input", () => rerenderCanvas());
@@ -513,16 +521,7 @@ function rerenderCanvas() {
   `;
 
   wireCanvasInteractions();
-  syncTickRowTop();
 }
-
-function syncTickRowTop() {
-  const tb = document.getElementById("topbar");
-  if (tb) document.documentElement.style.setProperty("--topbar-h", tb.offsetHeight + "px");
-}
-window.addEventListener("resize", syncTickRowTop);
-new ResizeObserver(syncTickRowTop).observe(document.getElementById("topbar"));
-syncTickRowTop();
 
 function wireCanvasInteractions() {
   const nodeEls = Array.from(document.querySelectorAll(".node"));
