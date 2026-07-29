@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인생 로드맵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#faf6ef; --paper-raised:#f2ecdf; --ink:#2b2620; --ink-soft:#6b6558; --line:#ded5c0; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; }
+  h1 { font-family:"Fraunces",serif; font-weight:500; font-size:24px; margin:0; }
+  header { padding:24px 28px 14px; border-bottom:1px solid var(--line); }
+  header p { margin:6px 0 0; color:var(--ink-soft); font-size:13px; }
+  .layout { display:flex; min-height:calc(100vh - 78px); }
+  aside { width:210px; flex-shrink:0; border-right:1px solid var(--line); padding:18px; font-size:13px; overflow-y:auto; }
+  .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
+  .section { margin-bottom:20px; }
+  .row { display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer; }
+  .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
+  #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
+  .canvas-wrap { flex:1; overflow:auto; position:relative; }
+  .canvas { position:relative; }
+  .node { position:absolute; display:block; border:1px solid; border-radius:10px; padding:10px 12px; text-decoration:none; color:inherit; }
+  .node-status { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-soft); margin-bottom:4px; }
+  .node-title { font-size:14px; font-weight:500; line-height:1.3; }
+  .node-date { font-size:11px; color:var(--ink-soft); margin-top:4px; }
+  .hidden { display:none !important; }
+  #meta { margin-top:10px; font-size:11px; color:var(--ink-soft); }
+  .banner { background:var(--paper-raised); border-bottom:1px solid var(--line); padding:8px 28px; font-size:12px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="banner">이 파일은 2026. 7. 29. AM 10:51:00 기준 스냅샷이에요. 최신 상태가 필요하면 Claude한테 다시 요청해서 새 파일을 받으세요.</div>
+<header>
+  <h1>인생 로드맵</h1>
+  <p>노션 goals 데이터베이스 스냅샷</p>
+</header>
+<div class="layout">
+  <aside>
+    <div class="section">
+      <div class="section-title">검색</div>
+      <input id="search" placeholder="목표 이름 검색">
+    </div>
+    <div class="section">
+      <div class="section-title">상태</div>
+      <label class="row">
+        <input type="checkbox" class="status-cb" value="시작 전" checked>
+        <span class="dot" style="background:#5f5e5a"></span>시작 전
+      </label>
+<label class="row">
+        <input type="checkbox" class="status-cb" value="진행 중" checked>
+        <span class="dot" style="background:#ba7517"></span>진행 중
+      </label>
+<label class="row">
+        <input type="checkbox" class="status-cb" value="달성" checked>
+        <span class="dot" style="background:#3b6d11"></span>달성
+      </label>
+      <label class="row"><input type="checkbox" id="current-only">요즘 목표만</label>
+    </div>
+    <div class="section">
+      <div class="section-title">카테고리</div>
+      <label class="row">
+        <input type="checkbox" class="cat-cb" value="🏠 라이프 스타일" checked>라이프 스타일
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="🪙 자산관리" checked>자산관리
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="💪🏻 건강/피트니스" checked>건강/피트니스
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="🍀 정신/마음" checked>정신/마음
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="✈️ 여행/모험" checked>여행/모험
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="💼 일/커리어" checked>일/커리어
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="✍🏻 예술/창작" checked>예술/창작
+      </label>
+<label class="row">
+        <input type="checkbox" class="cat-cb" value="🩵 사랑/관계/가족" checked>사랑/관계/가족
+      </label>
+    </div>
+    <div id="meta">스냅샷 생성: 2026. 7. 29. AM 10:51:00</div>
+  </aside>
+  <div class="canvas-wrap">
+    <div class="canvas" style="width:2450px;height:6585px;">
+      <svg width="2450" height="6585" style="position:absolute;left:0;top:0;pointer-events:none;">
+        <path d="M 220 270 C 265 270, 265 270, 310 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b80019842de3ebf299827" data-target="https://app.notion.com/p/166aed0b3e5b8054b6e9e5793b302931" />
+<path d="M 220 498 C 265 498, 265 498, 310 498" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/1b9aed0b3e5b800c9631cf32abfb8a2a" data-target="https://app.notion.com/p/1b9aed0b3e5b80968728ff1fb361212f" />
+<path d="M 220 840 C 265 840, 265 840, 310 840" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b80338546e36cd2165348" data-target="https://app.notion.com/p/166aed0b3e5b805ea1e4cc1987864af1" />
+<path d="M 220 156 C 265 156, 265 156, 310 156" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8053bac8f11a33b1512c" data-target="https://app.notion.com/p/166aed0b3e5b80589513f1596935da35" />
+<path d="M 530 156 C 575 156, 575 156, 620 156" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b80589513f1596935da35" data-target="https://app.notion.com/p/23daed0b3e5b801b8d12d4a5dec45b7c" />
+<path d="M 220 612 C 265 612, 265 612, 310 612" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/205aed0b3e5b8066832ae9fa8855245c" data-target="https://app.notion.com/p/205aed0b3e5b80ce9568e01e4ebeb83e" />
+<path d="M 840 156 C 885 156, 885 156, 930 156" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/23daed0b3e5b801b8d12d4a5dec45b7c" data-target="https://app.notion.com/p/23daed0b3e5b80bba0fec2a37a998d51" />
+<path d="M 530 612 C 575 612, 575 612, 620 612" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/205aed0b3e5b80ce9568e01e4ebeb83e" data-target="https://app.notion.com/p/205aed0b3e5b80eeb180c219f1bc3fc3" />
+<path d="M 530 270 C 575 270, 575 270, 620 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8054b6e9e5793b302931" data-target="https://app.notion.com/p/166aed0b3e5b8027bfccef21b84fdae1" />
+<path d="M 840 270 C 885 270, 885 270, 930 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8027bfccef21b84fdae1" data-target="https://app.notion.com/p/166aed0b3e5b8059bcc3f257b46bdb62" />
+<path d="M 530 498 C 575 498, 575 498, 620 498" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/1b9aed0b3e5b80968728ff1fb361212f" data-target="https://app.notion.com/p/268aed0b3e5b80e798bae84af0ded1c7" />
+<path d="M 220 1581 C 265 1581, 265 1638, 310 1638" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/16caed0b3e5b8064b9bbf9cb4648742b" data-target="https://app.notion.com/p/166aed0b3e5b8021a23ada367b4d1e9b" />
+<path d="M 220 1581 C 265 1581, 265 1524, 310 1524" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/16caed0b3e5b8064b9bbf9cb4648742b" data-target="https://app.notion.com/p/166aed0b3e5b80e0a032d2d547ec65d4" />
+<path d="M 220 1410 C 265 1410, 265 1410, 310 1410" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b800db184e7b13afb9362" data-target="https://app.notion.com/p/166aed0b3e5b800c9057c03ae6a475a1" />
+<path d="M 220 1296 C 265 1296, 265 1296, 310 1296" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/27daed0b3e5b8020b6eef892485158e2" data-target="https://app.notion.com/p/27daed0b3e5b80ca8c6cf98a9d086461" />
+<path d="M 1150 270 C 1195 270, 1195 270, 1240 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8059bcc3f257b46bdb62" data-target="https://app.notion.com/p/166aed0b3e5b803b8800ca59a06d4cac" />
+<path d="M 1460 270 C 1505 270, 1505 270, 1550 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b803b8800ca59a06d4cac" data-target="https://app.notion.com/p/166aed0b3e5b8008b021e4a43781089c" />
+<path d="M 1770 270 C 1815 270, 1815 270, 1860 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8008b021e4a43781089c" data-target="https://app.notion.com/p/234aed0b3e5b809f9a55e718b4cde8e3" />
+<path d="M 530 1410 C 575 1410, 575 1410, 620 1410" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b800c9057c03ae6a475a1" data-target="https://app.notion.com/p/166aed0b3e5b80b7932ce3259cbb9e1e" />
+<path d="M 2080 270 C 2125 270, 2125 270, 2170 270" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/234aed0b3e5b809f9a55e718b4cde8e3" data-target="https://app.notion.com/p/234aed0b3e5b80beab7eda8f48d0e226" />
+<path d="M 220 2721 C 265 2721, 265 2721, 310 2721" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/166aed0b3e5b8067a6f2f3f56c8a3ab4" data-target="https://app.notion.com/p/166aed0b3e5b80cf8134e24861b1c50e" />
+<path d="M 1150 944 C 1415 944, 355 1638, 620 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/226aed0b3e5b80b38c30e86ba26d299a" data-target="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" />
+<path d="M 840 1762 C 885 1762, 885 1058, 930 1058" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/2a6aed0b3e5b8016b80bc91f4a4d3b66" data-target="https://app.notion.com/p/2a6aed0b3e5b80cca4caf0f6b7c13628" />
+<path d="M 1150 1058 C 1415 1058, 355 1638, 620 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/2a6aed0b3e5b80cca4caf0f6b7c13628" data-target="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" />
+<path d="M 840 1762 C 885 1762, 885 3586, 930 3586" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/2a6aed0b3e5b8016b80bc91f4a4d3b66" data-target="https://app.notion.com/p/2a6aed0b3e5b802d90e5d0dc573a1943" />
+<path d="M 530 1638 C 575 1638, 575 1638, 620 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b8021a23ada367b4d1e9b" data-target="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" />
+<path d="M 1150 1715 C 1195 1715, 1195 1715, 1240 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" data-target="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" />
+<path d="M 1150 1715 C 1350 1715, 1350 1715, 1550 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" data-target="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56" />
+<path d="M 1150 1715 C 1415 1715, 355 1638, 620 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" data-target="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" />
+<path d="M 840 1638 C 1105 1638, 45 1638, 310 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" data-target="https://app.notion.com/p/166aed0b3e5b8021a23ada367b4d1e9b" />
+<path d="M 840 1638 C 885 1638, 885 944, 930 944" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" data-target="https://app.notion.com/p/226aed0b3e5b80b38c30e86ba26d299a" />
+<path d="M 840 1638 C 885 1638, 885 1715, 930 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" data-target="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" />
+<path d="M 840 1638 C 885 1638, 885 3586, 930 3586" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" data-target="https://app.notion.com/p/2a6aed0b3e5b802d90e5d0dc573a1943" />
+<path d="M 840 1638 C 885 1638, 885 1058, 930 1058" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" data-target="https://app.notion.com/p/2a6aed0b3e5b80cca4caf0f6b7c13628" />
+<path d="M 1770 987.5 C 2035 987.5, 975 1715, 1240 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b80c9b7cbc3e5426d1a4c" data-target="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" />
+<path d="M 1460 1715 C 1725 1715, 665 1715, 930 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" data-target="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" />
+<path d="M 1460 1715 C 1505 1715, 1505 987.5, 1550 987.5" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" data-target="https://app.notion.com/p/166aed0b3e5b80c9b7cbc3e5426d1a4c" />
+<path d="M 1460 1715 C 1505 1715, 1505 1715, 1550 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" data-target="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56" />
+<path d="M 1150 3586 C 1415 3586, 355 1638, 620 1638" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/2a6aed0b3e5b802d90e5d0dc573a1943" data-target="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" />
+<path d="M 1770 1715 C 2035 1715, 975 1715, 1240 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56" data-target="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" />
+<path d="M 1770 1715 C 2190 1715, 510 1715, 930 1715" fill="none" stroke="#8a8578" stroke-width="1.5" stroke-dasharray="4 4"
+        data-source="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56" data-target="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" />
+<path d="M 220 5571 C 265 5571, 265 5571, 310 5571" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/234aed0b3e5b80869de4dc6b5d3f1260" data-target="https://app.notion.com/p/234aed0b3e5b80e88daada4f4bf093f1" />
+<path d="M 530 5571 C 575 5571, 575 5571, 620 5571" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/234aed0b3e5b80e88daada4f4bf093f1" data-target="https://app.notion.com/p/234aed0b3e5b80119123ce1334cb3945" />
+<path d="M 840 5571 C 885 5571, 885 5571, 930 5571" fill="none" stroke="#8a8578" stroke-width="1.5" 
+        data-source="https://app.notion.com/p/234aed0b3e5b80119123ce1334cb3945" data-target="https://app.notion.com/p/234aed0b3e5b80869414fd42ae307fcc" />
+      </svg>
+      <a class="node" href="https://app.notion.com/p/166aed0b3e5b806196d0d08a7d4fd28e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b806196d0d08a7d4fd28e"
+        data-status="달성" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="방에 타일카페트 깔기"
+        title=""
+        style="left:0px;top:0px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8b5a2b">방에 타일카페트 깔기</div>
+        <div class="node-date">2025-03-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80019842de3ebf299827" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80019842de3ebf299827"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 5000만원"
+        title=""
+        style="left:0px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 5000만원</div>
+        <div class="node-date">2025-03-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1b9aed0b3e5b800c9631cf32abfb8a2a" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1b9aed0b3e5b800c9631cf32abfb8a2a"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="전체 뛴 거리 300km"
+        title=""
+        style="left:0px;top:456px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">전체 뛴 거리 300km</div>
+        <div class="node-date">2025-03-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1d9aed0b3e5b80ec94bed80f70bd79b3" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1d9aed0b3e5b80ec94bed80f70bd79b3"
+        data-status="달성" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="방 꾸미기"
+        title="수납 침대, 6단 책장, 베란다 랙"
+        style="left:0px;top:342px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8b5a2b">방 꾸미기</div>
+        <div class="node-date">2025-05-18</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80338546e36cd2165348" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80338546e36cd2165348"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="총 금융소득 700만원"
+        title="675만원"
+        style="left:0px;top:798px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">총 금융소득 700만원</div>
+        <div class="node-date">2025-06-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80589513f1596935da35" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80589513f1596935da35"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="한 달 동안 뛴 거리 30km"
+        title="31.9km"
+        style="left:310px;top:114px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">한 달 동안 뛴 거리 30km</div>
+        <div class="node-date">2025-07-02</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/205aed0b3e5b8066832ae9fa8855245c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/205aed0b3e5b8066832ae9fa8855245c"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="30분 달리기"
+        title=""
+        style="left:0px;top:570px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">30분 달리기</div>
+        <div class="node-date">2025-07-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/205aed0b3e5b806aa9dce85fcfe2cfe8" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/205aed0b3e5b806aa9dce85fcfe2cfe8"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="아침 달리기"
+        title=""
+        style="left:0px;top:684px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">아침 달리기</div>
+        <div class="node-date">2025-07-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8053bac8f11a33b1512c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8053bac8f11a33b1512c"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="한 달 동안 뛴 거리 20km"
+        title="10.93km"
+        style="left:0px;top:114px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">한 달 동안 뛴 거리 20km</div>
+        <div class="node-date">2025-07-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/23daed0b3e5b801b8d12d4a5dec45b7c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/23daed0b3e5b801b8d12d4a5dec45b7c"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="2달 연속 30km 이상 달리기"
+        title=""
+        style="left:620px;top:114px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">2달 연속 30km 이상 달리기</div>
+        <div class="node-date">2025-08-01</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1eaaed0b3e5b80aca1ffe3fa1ac0cf99" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1eaaed0b3e5b80aca1ffe3fa1ac0cf99"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="발건강 찾기"
+        title=""
+        style="left:0px;top:912px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">발건강 찾기</div>
+        <div class="node-date">2025-08-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/23daed0b3e5b80bc8477d80135e4b4d6" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/23daed0b3e5b80bc8477d80135e4b4d6"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="2주 연속 30분 이상 달리기"
+        title=""
+        style="left:0px;top:1026px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">2주 연속 30분 이상 달리기</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/23daed0b3e5b80bba0fec2a37a998d51" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/23daed0b3e5b80bba0fec2a37a998d51"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="3달 연속 30km 이상 달리기"
+        title=""
+        style="left:930px;top:114px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">3달 연속 30km 이상 달리기</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/205aed0b3e5b80ce9568e01e4ebeb83e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/205aed0b3e5b80ce9568e01e4ebeb83e"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="45분 달리기"
+        title=""
+        style="left:310px;top:570px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">45분 달리기</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8027bfccef21b84fdae1" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8027bfccef21b84fdae1"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 7000만원"
+        title="70,181,891 원"
+        style="left:620px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 7000만원</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1b9aed0b3e5b80968728ff1fb361212f" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1b9aed0b3e5b80968728ff1fb361212f"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="전체 뛴 거리 400km"
+        title="404.2km"
+        style="left:310px;top:456px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">전체 뛴 거리 400km</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/267aed0b3e5b8038aeffcffe434c9a52" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/267aed0b3e5b8038aeffcffe434c9a52"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="한 달에 50km 달리기"
+        title="52.9km"
+        style="left:0px;top:1140px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">한 달에 50km 달리기</div>
+        <div class="node-date">2025-09-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/16caed0b3e5b8064b9bbf9cb4648742b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/16caed0b3e5b8064b9bbf9cb4648742b"
+        data-status="달성" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="이사 가기"
+        title="10/17"
+        style="left:0px;top:1539px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8b5a2b">이사 가기</div>
+        <div class="node-date">2025-10-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b800db184e7b13afb9362" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b800db184e7b13afb9362"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="10km"
+        title="10.05km"
+        style="left:0px;top:1368px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">10km</div>
+        <div class="node-date">2025-11-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/27daed0b3e5b8020b6eef892485158e2" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/27daed0b3e5b8020b6eef892485158e2"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="10km / 60분"
+        title="10.05km / 51:55"
+        style="left:0px;top:1254px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">10km / 60분</div>
+        <div class="node-date">2025-11-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/268aed0b3e5b80e798bae84af0ded1c7" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/268aed0b3e5b80e798bae84af0ded1c7"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="전체 뛴 거리 500km"
+        title=""
+        style="left:620px;top:456px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">전체 뛴 거리 500km</div>
+        <div class="node-date">2025-11-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/275aed0b3e5b80ec87a1d926abfde90a" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/275aed0b3e5b80ec87a1d926abfde90a"
+        data-status="달성" data-categories="🍀 정신/마음" data-current="0"
+        data-title="1년에 영화/시리즈 50편 보기 (2025)"
+        title="50편"
+        style="left:0px;top:1653px;width:220px;min-height:84px;
+          background:#eaf3de;border-color:#4b6b3a;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#4b6b3a">1년에 영화/시리즈 50편 보기 (2025)</div>
+        <div class="node-date">2025-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80b8b762d49a4ef9aa9b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80b8b762d49a4ef9aa9b"
+        data-status="달성" data-categories="🍀 정신/마음" data-current="0"
+        data-title="1년에 책 50권 읽기"
+        title="50권"
+        style="left:0px;top:1767px;width:220px;min-height:84px;
+          background:#eaf3de;border-color:#4b6b3a;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#4b6b3a">1년에 책 50권 읽기</div>
+        <div class="node-date">2025-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8054b6e9e5793b302931" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8054b6e9e5793b302931"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 6000만원"
+        title="64,286,373원"
+        style="left:310px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 6000만원</div>
+        <div class="node-date">2025-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8059bcc3f257b46bdb62" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8059bcc3f257b46bdb62"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 8000만원"
+        title=""
+        style="left:930px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 8000만원</div>
+        <div class="node-date">2025-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b805ea1e4cc1987864af1" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b805ea1e4cc1987864af1"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="총 금융소득 1000만원"
+        title="10,400,857원"
+        style="left:310px;top:798px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">총 금융소득 1000만원</div>
+        <div class="node-date">2025-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/27daed0b3e5b80ca8c6cf98a9d086461" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/27daed0b3e5b80ca8c6cf98a9d086461"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스" data-current="1"
+        data-title="10km / 50분"
+        title=""
+        style="left:310px;top:1254px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전 · 요즘 목표</div>
+        <div class="node-title" style="color:#0f6e56">10km / 50분</div>
+        <div class="node-date">2026-01-01</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/205aed0b3e5b80eeb180c219f1bc3fc3" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/205aed0b3e5b80eeb180c219f1bc3fc3"
+        data-status="달성" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="1시간 달리기"
+        title=""
+        style="left:620px;top:570px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#0f6e56">1시간 달리기</div>
+        <div class="node-date">2026-01-01</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80fca3abfcdd865c33c4" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80fca3abfcdd865c33c4"
+        data-status="시작 전" data-categories="✈️ 여행/모험,🏠 라이프 스타일" data-current="0"
+        data-title="운전면허 취득"
+        title=""
+        style="left:0px;top:1881px;width:220px;min-height:84px;
+          background:#faece7;border-color:#b24a2a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#b24a2a">운전면허 취득</div>
+        <div class="node-date">2026-01-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80099d62fc9a3b24a276" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80099d62fc9a3b24a276"
+        data-status="달성" data-categories="🪙 자산관리,💼 일/커리어" data-current="0"
+        data-title="연봉 5000만원"
+        title="46,045,320원"
+        style="left:0px;top:1995px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">연봉 5000만원</div>
+        <div class="node-date">2026-01-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8008b021e4a43781089c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8008b021e4a43781089c"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 1억원"
+        title=""
+        style="left:1550px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 1억원</div>
+        <div class="node-date">2026-01-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b803b8800ca59a06d4cac" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b803b8800ca59a06d4cac"
+        data-status="달성" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 9000만원"
+        title=""
+        style="left:1240px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:0.65;">
+        <div class="node-status"><span class="dot" style="background:#3b6d11"></span>달성</div>
+        <div class="node-title" style="color:#8a6d1f">자산 9000만원</div>
+        <div class="node-date">2026-02-28</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2a6aed0b3e5b80aabaefcbae7fe46300" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2a6aed0b3e5b80aabaefcbae7fe46300"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="1분 매달리기"
+        title=""
+        style="left:0px;top:2109px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#0f6e56">1분 매달리기</div>
+        <div class="node-date">2026-03-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1b9aed0b3e5b80aea423dee1ae95cf87" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1b9aed0b3e5b80aea423dee1ae95cf87"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="그림 콘텐츠 5개 업로드"
+        title="유튜브 숏츠, 인스타 릴스"
+        style="left:0px;top:2223px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">그림 콘텐츠 5개 업로드</div>
+        <div class="node-date">2026-06-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/303aed0b3e5b808ab353d25deac7f130" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/303aed0b3e5b808ab353d25deac7f130"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="태호랑 국내 여행"
+        title=""
+        style="left:0px;top:2337px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">태호랑 국내 여행</div>
+        <div class="node-date">2026-06-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b800c9057c03ae6a475a1" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b800c9057c03ae6a475a1"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="하프 마라톤 완주"
+        title=""
+        style="left:310px;top:1368px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#0f6e56">하프 마라톤 완주</div>
+        <div class="node-date">2026-06-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b809f9a55e718b4cde8e3" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b809f9a55e718b4cde8e3"
+        data-status="진행 중" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 1억 2천만원"
+        title=""
+        style="left:1860px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#ba7517"></span>진행 중</div>
+        <div class="node-title" style="color:#8a6d1f">자산 1억 2천만원</div>
+        <div class="node-date">2026-06-30</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1b9aed0b3e5b80f69bccf45c9ca5726e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1b9aed0b3e5b80f69bccf45c9ca5726e"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="1"
+        data-title="극작하기"
+        title=""
+        style="left:0px;top:2451px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전 · 요즘 목표</div>
+        <div class="node-title" style="color:#5b3e8a">극작하기</div>
+        <div class="node-date">2026-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2deaed0b3e5b804b80d1f4f2a4796dcd" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2deaed0b3e5b804b80d1f4f2a4796dcd"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="부모님께 요리해드리기"
+        title=""
+        style="left:0px;top:2565px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">부모님께 요리해드리기</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8067a6f2f3f56c8a3ab4" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8067a6f2f3f56c8a3ab4"
+        data-status="시작 전" data-categories="🪙 자산관리,💼 일/커리어" data-current="0"
+        data-title="연봉 6000만원"
+        title=""
+        style="left:0px;top:2679px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">연봉 6000만원</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/226aed0b3e5b80b38c30e86ba26d299a" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/226aed0b3e5b80b38c30e86ba26d299a"
+        data-status="시작 전" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="오로지 일기 쓰기만을 위한 책상 갖기"
+        title="책상과 조명만 있는. 이외의 전자제품은 없는."
+        style="left:930px;top:902px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8b5a2b">오로지 일기 쓰기만을 위한 책상 갖기</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b80beab7eda8f48d0e226" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b80beab7eda8f48d0e226"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 1억 5천만원"
+        title=""
+        style="left:2170px;top:228px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">자산 1억 5천만원</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80b7932ce3259cbb9e1e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80b7932ce3259cbb9e1e"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스" data-current="0"
+        data-title="풀 마라톤"
+        title=""
+        style="left:620px;top:1368px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#0f6e56">풀 마라톤</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/303aed0b3e5b80c6af19f84e768e51ff" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/303aed0b3e5b80c6af19f84e768e51ff"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="하랑이랑 호주 여행"
+        title=""
+        style="left:0px;top:2793px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">하랑이랑 호주 여행</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2e0aed0b3e5b8096b36ce8944a0b9fd4" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2e0aed0b3e5b8096b36ce8944a0b9fd4"
+        data-status="진행 중" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="그림 100개 그리기"
+        title=""
+        style="left:0px;top:2907px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#ba7517"></span>진행 중</div>
+        <div class="node-title" style="color:#5b3e8a">그림 100개 그리기</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/30eaed0b3e5b809785c6f75f29781c8e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/30eaed0b3e5b809785c6f75f29781c8e"
+        data-status="진행 중" data-categories="" data-current="0"
+        data-title="영화 40편"
+        title=""
+        style="left:0px;top:3021px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#ba7517"></span>진행 중</div>
+        <div class="node-title" style="color:#5f5e5a">영화 40편</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/30eaed0b3e5b80f69776c3ee2f9b3bc8" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/30eaed0b3e5b80f69776c3ee2f9b3bc8"
+        data-status="진행 중" data-categories="" data-current="0"
+        data-title="책 40권"
+        title=""
+        style="left:0px;top:3135px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#ba7517"></span>진행 중</div>
+        <div class="node-title" style="color:#5f5e5a">책 40권</div>
+        <div class="node-date">2026-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80c08d94d2defdd81c3c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80c08d94d2defdd81c3c"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="1"
+        data-title="&lt;헤드윅&gt; 공연하기"
+        title="Broadwaylicensing에 신청하기"
+        style="left:0px;top:3249px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전 · 요즘 목표</div>
+        <div class="node-title" style="color:#5b3e8a">&lt;헤드윅&gt; 공연하기</div>
+        <div class="node-date">2027-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/22caed0b3e5b805fb1fac21ef4cb8fa3" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/22caed0b3e5b805fb1fac21ef4cb8fa3"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="기타 치면서 노래 부르기"
+        title=""
+        style="left:0px;top:3363px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">기타 치면서 노래 부르기</div>
+        <div class="node-date">2027-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2a6aed0b3e5b80cca4caf0f6b7c13628" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2a6aed0b3e5b80cca4caf0f6b7c13628"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="나만의 옷방"
+        title=""
+        style="left:930px;top:1016px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">나만의 옷방</div>
+        <div class="node-date">2027-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1a8aed0b3e5b80c189a2ee5f7b528cc9" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1a8aed0b3e5b80c189a2ee5f7b528cc9"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="내 노래를 만들기"
+        title=""
+        style="left:0px;top:3477px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">내 노래를 만들기</div>
+        <div class="node-date">2027-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80e0a032d2d547ec65d4" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80e0a032d2d547ec65d4"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="부모님에게서 경제적으로 완전히 독립하기"
+        title="집을 내 돈으로"
+        style="left:310px;top:1482px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">부모님에게서 경제적으로 완전히 독립하기</div>
+        <div class="node-date">2027-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2a6aed0b3e5b8016b80bc91f4a4d3b66" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2a6aed0b3e5b8016b80bc91f4a4d3b66"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="주거 독립"
+        title=""
+        style="left:620px;top:1720px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">주거 독립</div>
+        <div class="node-date">2027-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8021a23ada367b4d1e9b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8021a23ada367b4d1e9b"
+        data-status="시작 전" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="큰 책상을 갖기"
+        title=""
+        style="left:310px;top:1596px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8b5a2b">큰 책상을 갖기</div>
+        <div class="node-date">2027-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1a8aed0b3e5b80d0a658c0c18b8489da" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1a8aed0b3e5b80d0a658c0c18b8489da"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="피아노 치면서 노래 부르기"
+        title=""
+        style="left:0px;top:3591px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">피아노 치면서 노래 부르기</div>
+        <div class="node-date">2027-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/171aed0b3e5b80a1a9d6ed4b4a496dc1" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/171aed0b3e5b80a1a9d6ed4b4a496dc1"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="내가 창작한 공연을 올리기"
+        title=""
+        style="left:0px;top:3705px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">내가 창작한 공연을 올리기</div>
+        <div class="node-date">2028-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1c8aed0b3e5b8088a3aef68968d70e90" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1c8aed0b3e5b8088a3aef68968d70e90"
+        data-status="시작 전" data-categories="🏠 라이프 스타일,✍🏻 예술/창작" data-current="0"
+        data-title="나만의 가구 만들기"
+        title=""
+        style="left:0px;top:3819px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8b5a2b">나만의 가구 만들기</div>
+        <div class="node-date">2030-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1f5aed0b3e5b80549f43d4d2816b6e33" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1f5aed0b3e5b80549f43d4d2816b6e33"
+        data-status="시작 전" data-categories="💼 일/커리어" data-current="0"
+        data-title="내 그림으로 전시회 열기"
+        title=""
+        style="left:0px;top:3933px;width:220px;min-height:84px;
+          background:#e6eef5;border-color:#2c4a66;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#2c4a66">내 그림으로 전시회 열기</div>
+        <div class="node-date">2030-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80ee936ef7b11311f142"
+        data-status="시작 전" data-categories="✍🏻 예술/창작,🏠 라이프 스타일" data-current="0"
+        data-title="작업실 겸 창작 창고를 갖기"
+        title=""
+        style="left:930px;top:1673px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">작업실 겸 창작 창고를 갖기</div>
+        <div class="node-date">2030-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1ebaed0b3e5b804590edfbc1bc15833b"
+        data-status="시작 전" data-categories="🏠 라이프 스타일" data-current="1"
+        data-title="꿈의 집 갖기"
+        title="합정/상수/망원/연남/서촌"
+        style="left:620px;top:1596px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전 · 요즘 목표</div>
+        <div class="node-title" style="color:#8b5a2b">꿈의 집 갖기</div>
+        <div class="node-date">2035-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80c9b7cbc3e5426d1a4c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80c9b7cbc3e5426d1a4c"
+        data-status="시작 전" data-categories="🏠 라이프 스타일,✍🏻 예술/창작" data-current="0"
+        data-title="내 극장을 갖기"
+        title="150-200석 규모"
+        style="left:1550px;top:945.5px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8b5a2b">내 극장을 갖기</div>
+        <div class="node-date">2035-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80498f81ddd3680e1d40" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80498f81ddd3680e1d40"
+        data-status="시작 전" data-categories="🏠 라이프 스타일" data-current="0"
+        data-title="사당역 고층 오피스텔에 살기"
+        title="방배 SK 리더스뷰 (파스텔 시티), 17억"
+        style="left:0px;top:4047px;width:220px;min-height:84px;
+          background:#f5e9da;border-color:#8b5a2b;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8b5a2b">사당역 고층 오피스텔에 살기</div>
+        <div class="node-date">2035-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/38eaed0b3e5b80d9ad37e99455c61b7b"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="연극/뮤지컬 라이선스 사업하기"
+        title=""
+        style="left:1240px;top:1673px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">연극/뮤지컬 라이선스 사업하기</div>
+        <div class="node-date">2035-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/244aed0b3e5b80c085cdc1d38d39e09c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/244aed0b3e5b80c085cdc1d38d39e09c"
+        data-status="시작 전" data-categories="✈️ 여행/모험,🏠 라이프 스타일" data-current="0"
+        data-title="캠핑카를 갖기"
+        title="1984 Volkswagen Caravelle 78PS Camper"
+        style="left:0px;top:4161px;width:220px;min-height:84px;
+          background:#faece7;border-color:#b24a2a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#b24a2a">캠핑카를 갖기</div>
+        <div class="node-date">2035-12-31 · 버킷리스트</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8049b7c6ef5f831b9b7b" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8049b7c6ef5f831b9b7b"
+        data-status="시작 전" data-categories="💼 일/커리어" data-current="0"
+        data-title="퇴사"
+        title=""
+        style="left:0px;top:4275px;width:220px;min-height:84px;
+          background:#e6eef5;border-color:#2c4a66;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#2c4a66">퇴사</div>
+        <div class="node-date">2035-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/2a6aed0b3e5b802d90e5d0dc573a1943" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/2a6aed0b3e5b802d90e5d0dc573a1943"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="한쪽 벽면이 모조리 책장"
+        title=""
+        style="left:930px;top:3544px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">한쪽 벽면이 모조리 책장</div>
+        <div class="node-date">2035-12-31</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8060b921f492bb68f642" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8060b921f492bb68f642"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="&lt;렌트&gt; 공연하기"
+        title=""
+        style="left:0px;top:4389px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">&lt;렌트&gt; 공연하기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/204aed0b3e5b807ebe8ce6a5a8546fdf" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/204aed0b3e5b807ebe8ce6a5a8546fdf"
+        data-status="시작 전" data-categories="💼 일/커리어,✍🏻 예술/창작" data-current="0"
+        data-title="도시별 visited 웹사이트 만들기"
+        title=""
+        style="left:0px;top:4503px;width:220px;min-height:84px;
+          background:#e6eef5;border-color:#2c4a66;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#2c4a66">도시별 Visited 웹사이트 만들기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80da9f49d4cdb6e81b4e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80da9f49d4cdb6e81b4e"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="독일어로 &lt;das parfum&gt; 읽기"
+        title=""
+        style="left:0px;top:4617px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">독일어로 &lt;Das Parfum&gt; 읽기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b802a8be0f7fd3d1c4a02" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b802a8be0f7fd3d1c4a02"
+        data-status="시작 전" data-categories="✈️ 여행/모험,🩵 사랑/관계/가족" data-current="0"
+        data-title="부모님 크루즈 여행 보내드리기"
+        title=""
+        style="left:0px;top:4731px;width:220px;min-height:84px;
+          background:#faece7;border-color:#b24a2a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#b24a2a">부모님 크루즈 여행 보내드리기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1abaed0b3e5b807bbfdcf110ea1aea91" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1abaed0b3e5b807bbfdcf110ea1aea91"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="수어 통역 자원봉사 하기"
+        title=""
+        style="left:0px;top:4845px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">수어 통역 자원봉사 하기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80d78804ce6eb5e30e71" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80d78804ce6eb5e30e71"
+        data-status="시작 전" data-categories="✈️ 여행/모험" data-current="0"
+        data-title="스위스 기차 여행"
+        title=""
+        style="left:0px;top:4959px;width:220px;min-height:84px;
+          background:#faece7;border-color:#b24a2a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#b24a2a">스위스 기차 여행</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80baa82bec83fc69100d" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80baa82bec83fc69100d"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="스케치업 익히기"
+        title="3D"
+        style="left:0px;top:5073px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">스케치업 익히기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/240aed0b3e5b8031a446fe41c4aa4894" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/240aed0b3e5b8031a446fe41c4aa4894"
+        data-status="시작 전" data-categories="✍🏻 예술/창작,💼 일/커리어" data-current="0"
+        data-title="애니메이션 스튜디오 만들기"
+        title="픽사, 지브리, 웨스앤더슨"
+        style="left:0px;top:5187px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">애니메이션 스튜디오 만들기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b805f95eeff95bb6dba56"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="연극/뮤지컬 등 공연 별점 사이트 만들기"
+        title=""
+        style="left:1550px;top:1673px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">연극/뮤지컬 등 공연 별점 사이트 만들기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b80cf8134e24861b1c50e" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b80cf8134e24861b1c50e"
+        data-status="시작 전" data-categories="🪙 자산관리,💼 일/커리어" data-current="0"
+        data-title="연봉 7000만원"
+        title=""
+        style="left:310px;top:2679px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">연봉 7000만원</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/16caed0b3e5b8056803ade06312ad36d" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/16caed0b3e5b8056803ade06312ad36d"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스,🍀 정신/마음" data-current="0"
+        data-title="요가 배우기"
+        title=""
+        style="left:0px;top:5301px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#0f6e56">요가 배우기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/20faed0b3e5b802fb953db5042c8a184" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/20faed0b3e5b802fb953db5042c8a184"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="일본어 책 읽기"
+        title=""
+        style="left:0px;top:5415px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">일본어 책 읽기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b80869de4dc6b5d3f1260" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b80869de4dc6b5d3f1260"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 2억원"
+        title=""
+        style="left:0px;top:5529px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">자산 2억원</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b80e88daada4f4bf093f1" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b80e88daada4f4bf093f1"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 3억원"
+        title=""
+        style="left:310px;top:5529px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">자산 3억원</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b80119123ce1334cb3945" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b80119123ce1334cb3945"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 5억원"
+        title=""
+        style="left:620px;top:5529px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">자산 5억원</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/234aed0b3e5b80869414fd42ae307fcc" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/234aed0b3e5b80869414fd42ae307fcc"
+        data-status="시작 전" data-categories="🪙 자산관리" data-current="0"
+        data-title="자산 10억원"
+        title=""
+        style="left:930px;top:5529px;width:220px;min-height:84px;
+          background:#fbf1d6;border-color:#8a6d1f;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#8a6d1f">자산 10억원</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/245aed0b3e5b8074ba62ccf0098eeb6c" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/245aed0b3e5b8074ba62ccf0098eeb6c"
+        data-status="시작 전" data-categories="💪🏻 건강/피트니스" data-current="1"
+        data-title="집에서 한강까지 뛰어가보기"
+        title="12km"
+        style="left:0px;top:5643px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전 · 요즘 목표</div>
+        <div class="node-title" style="color:#0f6e56">집에서 한강까지 뛰어가보기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b803dad16e2ab731c7eac" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b803dad16e2ab731c7eac"
+        data-status="시작 전" data-categories="✈️ 여행/모험" data-current="0"
+        data-title="포르투갈 여행 가기"
+        title=""
+        style="left:0px;top:5757px;width:220px;min-height:84px;
+          background:#faece7;border-color:#b24a2a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#b24a2a">포르투갈 여행 가기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/230aed0b3e5b807d8d7bd3320e64f393" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/230aed0b3e5b807d8d7bd3320e64f393"
+        data-status="시작 전" data-categories="💼 일/커리어,✍🏻 예술/창작" data-current="0"
+        data-title="혜화 연극/뮤지컬 지도 웹사이트 만들기"
+        title="Cursor AI 써보기"
+        style="left:0px;top:5871px;width:220px;min-height:84px;
+          background:#e6eef5;border-color:#2c4a66;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#2c4a66">혜화 연극/뮤지컬 지도 웹사이트 만들기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b800ca394f4567b29fb34" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b800ca394f4567b29fb34"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="feather 3d 익히기"
+        title="3D"
+        style="left:0px;top:5985px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">Feather 3D 익히기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/166aed0b3e5b8077a4fbe00401e31a6d" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/166aed0b3e5b8077a4fbe00401e31a6d"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="goethe-zertifikat a2 합격하기"
+        title=""
+        style="left:0px;top:6099px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">Goethe-Zertifikat A2 합격하기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1eaaed0b3e5b807e97a2dfc120d44157" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1eaaed0b3e5b807e97a2dfc120d44157"
+        data-status="시작 전" data-categories="✍🏻 예술/창작" data-current="0"
+        data-title="havehad 모델 하기"
+        title=""
+        style="left:0px;top:6213px;width:220px;min-height:84px;
+          background:#eeeafb;border-color:#5b3e8a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5b3e8a">havehad 모델 하기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1adaed0b3e5b80cda3d5cbe70cc324b2" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1adaed0b3e5b80cda3d5cbe70cc324b2"
+        data-status="시작 전" data-categories="" data-current="0"
+        data-title="jlpt n3 합격하기"
+        title=""
+        style="left:0px;top:6327px;width:220px;min-height:84px;
+          background:#f1efe8;border-color:#5f5e5a;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#5f5e5a"></span>시작 전</div>
+        <div class="node-title" style="color:#5f5e5a">JLPT N3 합격하기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+<a class="node" href="https://app.notion.com/p/1eaaed0b3e5b80a5a162df88e8c3b828" target="_blank" rel="noopener"
+        data-id="https://app.notion.com/p/1eaaed0b3e5b80a5a162df88e8c3b828"
+        data-status="진행 중" data-categories="💪🏻 건강/피트니스" data-current="1"
+        data-title="깨끗한 피부 되기"
+        title="두피건강도 포함!"
+        style="left:0px;top:6441px;width:220px;min-height:84px;
+          background:#e1f5ee;border-color:#0f6e56;opacity:1;">
+        <div class="node-status"><span class="dot" style="background:#ba7517"></span>진행 중 · 요즘 목표</div>
+        <div class="node-title" style="color:#0f6e56">깨끗한 피부 되기</div>
+        <div class="node-date">날짜 미정</div>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  const search = document.getElementById('search');
+  const currentOnly = document.getElementById('current-only');
+  const statusCbs = Array.from(document.querySelectorAll('.status-cb'));
+  const catCbs = Array.from(document.querySelectorAll('.cat-cb'));
+  const nodes = Array.from(document.querySelectorAll('.node'));
+  const edges = Array.from(document.querySelectorAll('svg path'));
+
+  function applyFilters() {
+    const q = search.value.trim().toLowerCase();
+    const activeStatus = new Set(statusCbs.filter(c => c.checked).map(c => c.value));
+    const activeCat = new Set(catCbs.filter(c => c.checked).map(c => c.value));
+    const onlyCurrent = currentOnly.checked;
+
+    nodes.forEach((n) => {
+      const status = n.dataset.status;
+      const cats = n.dataset.categories ? n.dataset.categories.split(',') : [];
+      const title = n.dataset.title;
+      const isCurrent = n.dataset.current === '1';
+      const catOk = cats.length === 0 || cats.some(c => activeCat.has(c));
+      const statusOk = activeStatus.has(status);
+      const searchOk = !q || title.includes(q);
+      const currentOk = !onlyCurrent || isCurrent;
+      const show = catOk && statusOk && searchOk && currentOk;
+      n.classList.toggle('hidden', !show);
+    });
+
+    edges.forEach((e) => {
+      const s = e.dataset.source, t = e.dataset.target;
+      const sNode = nodes.find(n => n.dataset.id === s);
+      const tNode = nodes.find(n => n.dataset.id === t);
+      const show = sNode && tNode && !sNode.classList.contains('hidden') && !tNode.classList.contains('hidden');
+      e.classList.toggle('hidden', !show);
+    });
+  }
+
+  search.addEventListener('input', applyFilters);
+  currentOnly.addEventListener('change', applyFilters);
+  statusCbs.forEach(c => c.addEventListener('change', applyFilters));
+  catCbs.forEach(c => c.addEventListener('change', applyFilters));
+</script>
+</body>
+</html>
