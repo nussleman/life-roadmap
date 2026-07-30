@@ -366,6 +366,17 @@ function edgePathD(x1, y1, x2, y2) {
   return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 }
 
+function multiEdgePath(points) {
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const { x: x1, y: y1 } = points[i];
+    const { x: x2, y: y2 } = points[i + 1];
+    const dx = Math.max(Math.abs(x2 - x1) / 2, 30);
+    d += ` C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+  }
+  return d;
+}
+
 function getFilterState() {
   const search = document.getElementById("search");
   const statusCbs = Array.from(document.querySelectorAll(".status-cb"));
@@ -587,7 +598,10 @@ function buildChainView(nodes) {
     return { w: Math.min(NODE_W + d * 14, 240), h: Math.min(NODE_H + Math.min(d, 3) * 6, 84) };
   }
 
+  function titleOf(id) { return byId.has(id) ? byId.get(id).title : id; }
+
   const placed = [];
+  const edgeWaypoints = new Map();
   let blockY = CANVAS_TOP_GAP;
   for (const comp of chains) {
     const compSet = new Set(comp);
@@ -609,8 +623,39 @@ function buildChainView(nodes) {
     }
     comp.forEach(id => { if (!rank.has(id)) rank.set(id, 0); });
 
+    // Insert dummy waypoint nodes for edges spanning more than one rank, so long
+    // connections reserve their own row slot instead of cutting across other cards.
+    const compEdges = seqEdges.filter(e => compSet.has(e.source) && compSet.has(e.target));
+    const compAll = comp.slice();
+    const dummyRank = new Map();
+    const edgeChainIds = new Map();
+    let dcount = 0;
+    for (const e of compEdges) {
+      const rs = rank.get(e.source), rt = rank.get(e.target);
+      const key = e.source + "->" + e.target;
+      if (rt - rs <= 1) { edgeChainIds.set(key, [e.source, e.target]); continue; }
+      const chain = [e.source];
+      let prev = e.source;
+      for (let r = rs + 1; r < rt; r++) {
+        const dId = `__d${dcount++}_${key}`;
+        rank.set(dId, r);
+        dummyRank.set(dId, r);
+        predMap.set(dId, [prev]);
+        succMap.set(dId, []);
+        succMap.get(prev).push(dId);
+        compAll.push(dId);
+        chain.push(dId);
+        prev = dId;
+      }
+      succMap.get(prev).push(e.target);
+      predMap.get(e.target).push(prev);
+      chain.push(e.target);
+      edgeChainIds.set(key, chain);
+    }
+    const compAllSet = new Set(compAll);
+
     const byRank = new Map();
-    comp.forEach(id => {
+    compAll.forEach(id => {
       const r = rank.get(id);
       if (!byRank.has(r)) byRank.set(r, []);
       byRank.get(r).push(id);
@@ -622,12 +667,12 @@ function buildChainView(nodes) {
     for (let r = 0; r <= maxRank; r++) {
       const idsAtRank = (byRank.get(r) || []).slice();
       idsAtRank.sort((a, b) => {
-        const pa = predMap.get(a).filter(p => compSet.has(p));
-        const pb = predMap.get(b).filter(p => compSet.has(p));
+        const pa = predMap.get(a).filter(p => compAllSet.has(p));
+        const pb = predMap.get(b).filter(p => compAllSet.has(p));
         const avgA = pa.length ? pa.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pa.length : 999;
         const avgB = pb.length ? pb.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pb.length : 999;
         if (avgA !== avgB) return avgA - avgB;
-        return byId.get(a).title.localeCompare(byId.get(b).title, "ko");
+        return titleOf(a).localeCompare(titleOf(b), "ko");
       });
       idsAtRank.forEach((id, i) => rowOf.set(id, i));
     }
@@ -641,8 +686,8 @@ function buildChainView(nodes) {
       for (const r of ranksToVisit) {
         const idsAtRank = (byRank.get(r) || []).slice();
         idsAtRank.sort((a, b) => {
-          const neighborsA = (backward ? succMap.get(a) : predMap.get(a)).filter(p => compSet.has(p));
-          const neighborsB = (backward ? succMap.get(b) : predMap.get(b)).filter(p => compSet.has(p));
+          const neighborsA = (backward ? succMap.get(a) : predMap.get(a)).filter(p => compAllSet.has(p));
+          const neighborsB = (backward ? succMap.get(b) : predMap.get(b)).filter(p => compAllSet.has(p));
           const curA = rowOf.get(a) ?? 0, curB = rowOf.get(b) ?? 0;
           const avgA = neighborsA.length ? neighborsA.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsA.length : curA;
           const avgB = neighborsB.length ? neighborsB.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsB.length : curB;
@@ -653,15 +698,33 @@ function buildChainView(nodes) {
       }
     }
 
-    const maxRow = Math.max(...comp.map(id => rowOf.get(id)));
+    const maxRow = Math.max(...compAll.map(id => rowOf.get(id)));
     const rowHeight = Math.max(...comp.map(id => sizeFor(id).h)) + CHAIN_ROW_GAP;
 
+    const posOfReal = new Map();
     comp.forEach((id) => {
       const { w, h } = sizeFor(id);
       const x = TIMELINE_START + rank.get(id) * CHAIN_COL_W;
       const y = blockY + rowOf.get(id) * rowHeight;
+      posOfReal.set(id, { x, y, w, h });
       placed.push({ ...byId.get(id), x, y, w, h });
     });
+
+    const dummyPos = new Map();
+    dummyRank.forEach((r, id) => {
+      const x = TIMELINE_START + r * CHAIN_COL_W + NODE_W / 2;
+      const y = blockY + rowOf.get(id) * rowHeight + rowHeight / 2;
+      dummyPos.set(id, { x, y });
+    });
+
+    for (const [key, chain] of edgeChainIds) {
+      const pts = chain.map((id, idx) => {
+        if (idx === 0) { const p = posOfReal.get(id); return { x: p.x + p.w, y: p.y + p.h / 2 }; }
+        if (idx === chain.length - 1) { const p = posOfReal.get(id); return { x: p.x, y: p.y + p.h / 2 }; }
+        return dummyPos.get(id);
+      });
+      edgeWaypoints.set(key, pts);
+    }
 
     blockY += (maxRow + 1) * rowHeight + 44;
   }
@@ -671,7 +734,7 @@ function buildChainView(nodes) {
   const totalHeight = Math.max(blockY, 40);
   const singles = nodes.filter(n => singleIds.has(n.id)).sort((a, b) => a.title.localeCompare(b.title, "ko"));
 
-  return { placed, totalWidth, totalHeight, singles, seqEdges };
+  return { placed, totalWidth, totalHeight, singles, seqEdges, edgeWaypoints };
 }
 
 function renderSequenceMode(filtered) {
@@ -684,8 +747,12 @@ function renderSequenceMode(filtered) {
   tickRow.innerHTML = `<div class="seq-label">화살표(선행→후속)로 연결된 목표는 흐름대로, 연결이 없는 목표는 아래 목록에 표시돼요</div>`;
 
   const edgePaths = view.seqEdges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
-    const s = nodeById.get(e.source), t = nodeById.get(e.target);
-    const d = edgePathD(s.x + s.w, s.y + s.h / 2, t.x, t.y + t.h / 2);
+    const key = e.source + "->" + e.target;
+    const pts = view.edgeWaypoints.get(key);
+    const d = pts ? multiEdgePath(pts) : (() => {
+      const s = nodeById.get(e.source), t = nodeById.get(e.target);
+      return edgePathD(s.x + s.w, s.y + s.h / 2, t.x, t.y + t.h / 2);
+    })();
     return `<path d="${d}" fill="none" stroke="#8a8578" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
