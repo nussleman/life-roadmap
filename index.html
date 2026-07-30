@@ -8,12 +8,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper:#ffffff; --paper-raised:#f7f7f5; --paper-hover:#eeeeec;
-    --ink:#1a1a18; --ink-soft:#6b6b66; --line:#e2e2de;
-    --accent:#d6304a;
+    --paper:#faf7f0; --paper-raised:#f3efe4; --paper-hover:#ece7d9;
+    --ink:#2a2622; --ink-soft:#736b5e; --line:#ddd5c3;
+    --accent:#c62f45;
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; overflow:hidden; }
+  body { position:relative; }
+  body::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1000;
+    opacity:0.5; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
   h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; }
   a { color: inherit; }
   body { display:flex; flex-direction:column; }
@@ -45,7 +51,7 @@
   .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
   .node.is-achieved { opacity:0.55; }
   .node.node-flow { position:static; width:200px; }
-  .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px; max-width:1500px; }
+  .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px 24px; max-width:1500px; }
   .singles-grid.show { display:flex; }
   .singles-header { width:100%; font-size:12px; color:var(--ink-soft); margin-bottom:2px; }
   .main { flex:1; min-width:0; height:100%; display:flex; flex-direction:column; min-height:0; }
@@ -61,7 +67,7 @@
   .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
-  .node { position:absolute; display:flex; flex-direction:column; gap:6px; background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 11px; cursor:pointer; overflow:hidden; background-clip:padding-box; transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
+  .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.98); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
   .node.selected { box-shadow:0 0 0 1.5px var(--ink), 0 6px 16px rgba(0,0,0,0.12); }
@@ -72,7 +78,17 @@
   .status-chip { display:inline-flex; align-items:center; justify-content:center; line-height:0; border-radius:999px; width:20px; height:20px; flex-shrink:0; border:1px solid transparent; }
   .status-chip svg { display:block; }
   .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); font-size:10px; width:auto; padding:0 7px; border-radius:999px; }
-  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+  .node-extra {
+    position:absolute; left:-1px; right:-1px; top:100%; margin-top:5px;
+    background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+    opacity:0; visibility:hidden; transform:translateY(-4px);
+    transition:opacity .15s ease, transform .15s ease, visibility .15s;
+    display:flex; flex-direction:column; gap:6px; z-index:40; pointer-events:none;
+  }
+  .node:hover .node-extra { opacity:1; visibility:visible; transform:translateY(0); }
+  .node:hover { z-index:30; }
   .node-cats { display:flex; flex-wrap:wrap; gap:4px; }
   .cat-tag { font-size:10px; font-weight:600; padding:1px 7px; border-radius:999px; white-space:nowrap; }
   .hidden { display:none !important; }
@@ -175,7 +191,7 @@
 </details>
 
 <script>
-const NODE_W = 190, NODE_H = 92, ROW_GAP = 10, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
+const NODE_W = 190, NODE_H = 56, ROW_GAP = 10, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
 const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
 
 const STATUS_META = {
@@ -196,15 +212,15 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_META = {
-  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", bg2: "#c3ecdc", label: "건강/피트니스", emoji: "🏃" },
-  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", bg2: "#dcecc0", label: "정신/마음", emoji: "🧘" },
-  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", bg2: "#f8d3e0", label: "사랑/관계/가족", emoji: "💛" },
-  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", bg2: "#f2ddb9", label: "라이프 스타일", emoji: "🏠" },
-  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", bg2: "#f5e8ad", label: "자산관리", emoji: "💰" },
-  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", bg2: "#cce3f7", label: "일/커리어", emoji: "💼" },
-  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", bg2: "#e0d0f7", label: "예술/창작", emoji: "🎨" },
-  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", bg2: "#f7d2c2", label: "여행/모험", emoji: "✈️" },
-  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", bg2: "#dedcd5", label: "기타", emoji: "⭐" },
+  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", bg2: "#c3ecdc", bgFaint: "#f3f8f5", label: "건강/피트니스", emoji: "🏃" },
+  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", bg2: "#dcecc0", bgFaint: "#f6f7ef", label: "정신/마음", emoji: "🧘" },
+  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", bg2: "#f8d3e0", bgFaint: "#faf2f2", label: "사랑/관계/가족", emoji: "💛" },
+  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", bg2: "#f2ddb9", bgFaint: "#f8f2e6", label: "라이프 스타일", emoji: "🏠" },
+  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", bg2: "#f5e8ad", bgFaint: "#f8f3e3", label: "자산관리", emoji: "💰" },
+  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", bg2: "#cce3f7", bgFaint: "#f1f5f7", label: "일/커리어", emoji: "💼" },
+  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", bg2: "#e0d0f7", bgFaint: "#f5f2f8", label: "예술/창작", emoji: "🎨" },
+  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", bg2: "#f7d2c2", bgFaint: "#f8f1ec", label: "여행/모험", emoji: "✈️" },
+  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", bg2: "#dedcd5", bgFaint: "#f5f3ee", label: "기타", emoji: "⭐" },
 };
 
 function esc(str) {
@@ -218,8 +234,9 @@ function monthsIndex(dateStr) {
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let GRAPH = null;
-let VIEW_MODE = "time";
+let VIEW_MODE = "sequence";
 let ACTIVE_PERIOD = null;
+let STATUS_COLOR_MODE = false;
 let FULL_ORDER = [];
 let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
 
@@ -379,8 +396,14 @@ function multiEdgePath(points) {
   for (let i = 0; i < points.length - 1; i++) {
     const { x: x1, y: y1 } = points[i];
     const { x: x2, y: y2 } = points[i + 1];
-    const dx = Math.max(Math.abs(x2 - x1) / 2, 30);
-    d += ` C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+    const dx = x2 - x1, dy = y2 - y1;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const off = Math.max(Math.abs(dx) / 2, 30) * Math.sign(dx || 1);
+      d += ` C ${x1 + off} ${y1}, ${x2 - off} ${y2}, ${x2} ${y2}`;
+    } else {
+      const off = Math.max(Math.abs(dy) / 2, 30) * Math.sign(dy || 1);
+      d += ` C ${x1} ${y1 + off}, ${x2} ${y2 - off}, ${x2} ${y2}`;
+    }
   }
   return d;
 }
@@ -421,6 +444,7 @@ function renderStatic() {
     <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
     ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
     <div id="right-controls">
+      <button class="ctrl-btn" id="statuscolor-btn">상태별 색칠</button>
       <button class="ctrl-btn" id="mode-btn"></button>
       <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
     </div>
@@ -456,6 +480,11 @@ function renderStatic() {
   document.getElementById("search").addEventListener("input", () => rerenderCanvas());
   document.getElementById("mode-btn").addEventListener("click", () => {
     VIEW_MODE = VIEW_MODE === "time" ? "sequence" : "time";
+    rerenderCanvas();
+  });
+  document.getElementById("statuscolor-btn").addEventListener("click", (e) => {
+    STATUS_COLOR_MODE = !STATUS_COLOR_MODE;
+    e.target.classList.toggle("active", STATUS_COLOR_MODE);
     rerenderCanvas();
   });
 
@@ -545,6 +574,8 @@ function renderNodeDiv(n, w, h) {
   const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
   const meta = STATUS_META[n.status];
   const emoji = n.icon || cat.emoji;
+  const cardBg = STATUS_COLOR_MODE ? meta.bg : cat.bgFaint;
+  const cardBorder = STATUS_COLOR_MODE ? meta.fg + "88" : "var(--line)";
   const statusHtml = n.overdue
     ? `<span class="status-chip overdue-tag" title="지연됨">⚠ 지연됨</span>`
     : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55" title="${esc(meta.label)}">${STATUS_ICONS[n.status]}</span>`;
@@ -558,10 +589,12 @@ function renderNodeDiv(n, w, h) {
   const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
   const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
   return `<div class="node ${n.overdue ? "overdue" : ""} ${achievedCls} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"
-    style="${posStyle}${sizeStyle}">
+    style="${posStyle}${sizeStyle}background:${cardBg};border-color:${cardBorder};">
     <div class="node-title">${emoji} ${esc(n.title)}</div>
-    <div>${statusHtml}</div>
-    ${catsHtml}
+    <div class="node-extra">
+      <div>${statusHtml}</div>
+      ${catsHtml}
+    </div>
   </div>`;
 }
 
@@ -606,9 +639,9 @@ function buildChainView(nodes) {
     const d = degree.get(id) || 0;
     const w = Math.min(NODE_W + d * 10, 270);
     const title = byId.get(id)?.title || "";
-    const charsPerLine = Math.max(6, Math.floor((w - 32) / 8.5));
-    const lines = Math.min(4, Math.max(1, Math.ceil(title.length / charsPerLine)));
-    const h = Math.min(Math.max(NODE_H + Math.min(d, 3) * 4, 66 + lines * 19), 160);
+    const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
+    const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
+    const h = Math.min(Math.max(NODE_H, 30 + lines * 19), 150);
     return { w, h };
   }
 
@@ -731,29 +764,57 @@ function buildChainView(nodes) {
       dummyPos.set(id, { x, y });
     });
 
-    // Spread multiple edges touching the same card across distinct points on its
-    // edge instead of all converging on the exact vertical center.
-    const outTotal = new Map(), inTotal = new Map();
-    for (const [, chain] of edgeChainIds) {
-      outTotal.set(chain[0], (outTotal.get(chain[0]) || 0) + 1);
-      inTotal.set(chain[chain.length - 1], (inTotal.get(chain[chain.length - 1]) || 0) + 1);
+    // Pick which side of a card an edge should touch (right/left/top/bottom)
+    // based on the direction toward the point it's heading to or coming from.
+    function anchorSide(box, refX, refY) {
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      const dx = refX - cx, dy = refY - cy;
+      if (Math.abs(dy) > Math.abs(dx) * 1.15) return dy > 0 ? "bottom" : "top";
+      return dx > 0 ? "right" : "left";
     }
-    const outSeen = new Map(), inSeen = new Map();
-    function portY(id, side) {
-      const p = posOfReal.get(id);
-      const total = (side === "out" ? outTotal : inTotal).get(id) || 1;
-      const seenMap = side === "out" ? outSeen : inSeen;
-      const seen = seenMap.get(id) || 0;
-      seenMap.set(id, seen + 1);
-      if (total <= 1) return p.y + p.h / 2;
-      const frac = (seen + 1) / (total + 1);
-      return p.y + p.h * (0.2 + frac * 0.6);
+    function pointOnSide(box, side, frac) {
+      if (side === "right") return { x: box.x + box.w, y: box.y + box.h * frac };
+      if (side === "left") return { x: box.x, y: box.y + box.h * frac };
+      if (side === "bottom") return { x: box.x + box.w * frac, y: box.y + box.h };
+      return { x: box.x + box.w * frac, y: box.y };
+    }
+
+    const edgeSides = new Map();
+    for (const [key, chain] of edgeChainIds) {
+      const srcBox = posOfReal.get(chain[0]);
+      const tgtBox = posOfReal.get(chain[chain.length - 1]);
+      const refForSrc = chain.length > 2 ? dummyPos.get(chain[1]) : { x: tgtBox.x + tgtBox.w / 2, y: tgtBox.y + tgtBox.h / 2 };
+      const refForTgt = chain.length > 2 ? dummyPos.get(chain[chain.length - 2]) : { x: srcBox.x + srcBox.w / 2, y: srcBox.y + srcBox.h / 2 };
+      edgeSides.set(key, {
+        srcSide: anchorSide(srcBox, refForSrc.x, refForSrc.y),
+        tgtSide: anchorSide(tgtBox, refForTgt.x, refForTgt.y),
+      });
+    }
+
+    // Spread multiple edges touching the same side of a card across that side,
+    // instead of all converging on the exact same point.
+    const portTotal = new Map(), portSeen = new Map();
+    for (const [key, chain] of edgeChainIds) {
+      const { srcSide, tgtSide } = edgeSides.get(key);
+      const sk = chain[0] + ":" + srcSide, tk = chain[chain.length - 1] + ":" + tgtSide;
+      portTotal.set(sk, (portTotal.get(sk) || 0) + 1);
+      portTotal.set(tk, (portTotal.get(tk) || 0) + 1);
+    }
+    function portPoint(id, side) {
+      const box = posOfReal.get(id);
+      const k = id + ":" + side;
+      const total = portTotal.get(k) || 1;
+      const seen = portSeen.get(k) || 0;
+      portSeen.set(k, seen + 1);
+      const frac = total <= 1 ? 0.5 : (0.2 + ((seen + 1) / (total + 1)) * 0.6);
+      return pointOnSide(box, side, frac);
     }
 
     for (const [key, chain] of edgeChainIds) {
+      const { srcSide, tgtSide } = edgeSides.get(key);
       const pts = chain.map((id, idx) => {
-        if (idx === 0) { const p = posOfReal.get(id); return { x: p.x + p.w, y: portY(id, "out") }; }
-        if (idx === chain.length - 1) { const p = posOfReal.get(id); return { x: p.x, y: portY(id, "in") }; }
+        if (idx === 0) return portPoint(id, srcSide);
+        if (idx === chain.length - 1) return portPoint(id, tgtSide);
         return dummyPos.get(id);
       });
       edgeWaypoints.set(key, pts);
