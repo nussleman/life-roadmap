@@ -61,16 +61,18 @@
   .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
-  .node { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:3px; border:1px solid; border-radius:8px; padding:6px 8px; cursor:pointer; overflow:hidden; background-clip:padding-box; }
+  .node { position:absolute; display:flex; flex-direction:column; gap:4px; border:1px solid; border-radius:8px; padding:8px 10px; cursor:pointer; overflow:hidden; background-clip:padding-box; transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.97); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
-  .node.selected { box-shadow:0 0 0 2px var(--ink); z-index:5; }
-  .node.related-highlight { box-shadow:0 0 0 2px var(--accent); z-index:4; }
-  .node.dimmed { opacity:0.3; }
-  .edge-highlight { stroke:var(--accent); stroke-width:2.5; opacity:1; }
-  .status-chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; letter-spacing:0.2px; border-radius:999px; padding:2px 8px; width:fit-content; border:1px solid transparent; }
-  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); }
-  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .node.selected { box-shadow:0 0 0 1.5px var(--ink), 0 6px 16px rgba(0,0,0,0.12); }
+  .node.related-highlight { box-shadow:0 0 0 1.5px var(--accent), 0 3px 10px rgba(214,48,74,0.15); }
+  .node.dimmed { opacity:0.32; filter:saturate(0.6); }
+  .edge-highlight { stroke:var(--accent) !important; stroke-width:2.2; opacity:1 !important; }
+  .edge-dimmed { opacity:0.15 !important; }
+  .node-top { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; }
+  .status-chip { display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border-radius:999px; width:18px; height:18px; flex-shrink:0; border:1px solid transparent; }
+  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); font-size:9px; width:auto; padding:0 6px; border-radius:999px; }
+  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
   .extra-cats { display:flex; gap:3px; margin-top:1px; }
   .extra-cats span { width:6px; height:6px; border-radius:999px; display:inline-block; }
   .hidden { display:none !important; }
@@ -173,7 +175,7 @@
 </details>
 
 <script>
-const NODE_W = 156, NODE_H = 64, ROW_GAP = 8, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
+const NODE_W = 156, NODE_H = 72, ROW_GAP = 8, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
 const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
 
 const STATUS_META = {
@@ -540,8 +542,8 @@ function renderNodeDiv(n, w, h) {
   const bg = n.status === "진행 중" ? cat.bg2 : cat.bg;
   const extraCats = n.categories.slice(1);
   const statusHtml = n.overdue
-    ? `<span class="status-chip overdue-tag">⚠ 지연됨</span>`
-    : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${meta.icon} ${meta.label}</span>`;
+    ? `<span class="status-chip overdue-tag" title="지연됨">⚠</span>`
+    : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55" title="${esc(meta.label)}">${meta.icon}</span>`;
   const extraDots = extraCats.length
     ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c] || CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
   const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
@@ -550,8 +552,10 @@ function renderNodeDiv(n, w, h) {
   const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
   return `<div class="node ${n.overdue ? "overdue" : ""} ${achievedCls} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"${titleAttr}
     style="${posStyle}${sizeStyle}background:${bg};border-color:${cat.fg};">
-    ${statusHtml}
-    <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
+    <div class="node-top">
+      <div class="node-title" style="color:${cat.fg}">${emoji} ${esc(n.title)}</div>
+      ${statusHtml}
+    </div>
     ${extraDots}
   </div>`;
 }
@@ -595,7 +599,12 @@ function buildChainView(nodes) {
 
   function sizeFor(id) {
     const d = degree.get(id) || 0;
-    return { w: Math.min(NODE_W + d * 14, 240), h: Math.min(NODE_H + Math.min(d, 3) * 6, 84) };
+    const w = Math.min(NODE_W + d * 14, 240);
+    const title = byId.get(id)?.title || "";
+    const charsPerLine = Math.max(6, Math.floor((w - 30) / 8.5));
+    const lines = Math.min(4, Math.max(1, Math.ceil(title.length / charsPerLine)));
+    const h = Math.min(Math.max(NODE_H + Math.min(d, 3) * 6, 40 + lines * 19), 140);
+    return { w, h };
   }
 
   function titleOf(id) { return byId.has(id) ? byId.get(id).title : id; }
@@ -717,10 +726,29 @@ function buildChainView(nodes) {
       dummyPos.set(id, { x, y });
     });
 
+    // Spread multiple edges touching the same card across distinct points on its
+    // edge instead of all converging on the exact vertical center.
+    const outTotal = new Map(), inTotal = new Map();
+    for (const [, chain] of edgeChainIds) {
+      outTotal.set(chain[0], (outTotal.get(chain[0]) || 0) + 1);
+      inTotal.set(chain[chain.length - 1], (inTotal.get(chain[chain.length - 1]) || 0) + 1);
+    }
+    const outSeen = new Map(), inSeen = new Map();
+    function portY(id, side) {
+      const p = posOfReal.get(id);
+      const total = (side === "out" ? outTotal : inTotal).get(id) || 1;
+      const seenMap = side === "out" ? outSeen : inSeen;
+      const seen = seenMap.get(id) || 0;
+      seenMap.set(id, seen + 1);
+      if (total <= 1) return p.y + p.h / 2;
+      const frac = (seen + 1) / (total + 1);
+      return p.y + p.h * (0.2 + frac * 0.6);
+    }
+
     for (const [key, chain] of edgeChainIds) {
       const pts = chain.map((id, idx) => {
-        if (idx === 0) { const p = posOfReal.get(id); return { x: p.x + p.w, y: p.y + p.h / 2 }; }
-        if (idx === chain.length - 1) { const p = posOfReal.get(id); return { x: p.x, y: p.y + p.h / 2 }; }
+        if (idx === 0) { const p = posOfReal.get(id); return { x: p.x + p.w, y: portY(id, "out") }; }
+        if (idx === chain.length - 1) { const p = posOfReal.get(id); return { x: p.x, y: portY(id, "in") }; }
         return dummyPos.get(id);
       });
       edgeWaypoints.set(key, pts);
@@ -790,7 +818,7 @@ function wireCanvasInteractions() {
 
   function clearHighlight() {
     nodeEls.forEach(x => x.classList.remove("selected", "related-highlight", "dimmed"));
-    edgeEls.forEach(x => x.classList.remove("edge-highlight"));
+    edgeEls.forEach(x => x.classList.remove("edge-highlight", "edge-dimmed"));
   }
 
   nodeEls.forEach((el) => {
@@ -807,6 +835,8 @@ function wireCanvasInteractions() {
       edgeEls.forEach((edge) => {
         if (edge.dataset.source === el.dataset.id || edge.dataset.target === el.dataset.id) {
           edge.classList.add("edge-highlight");
+        } else {
+          edge.classList.add("edge-dimmed");
         }
       });
     });
