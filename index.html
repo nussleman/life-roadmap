@@ -70,6 +70,15 @@
   .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.98); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
+  .node.ready-to-start { border-color:#e0a53c !important; }
+  .ready-badge {
+    position:absolute; top:-9px; right:-9px; width:20px; height:20px; border-radius:999px;
+    background:linear-gradient(135deg,#ffe08a,#f4a623); display:flex; align-items:center; justify-content:center;
+    font-size:11px; box-shadow:0 2px 7px rgba(230,150,20,0.5); z-index:6;
+    animation:readyBadgePulse 2.2s ease-in-out infinite;
+  }
+  @keyframes readyBadgePulse { 0%,100% { transform:scale(1); box-shadow:0 2px 7px rgba(230,150,20,0.5); } 50% { transform:scale(1.18); box-shadow:0 2px 11px rgba(230,150,20,0.75); } }
+  .ready-hint { color:#b9790f; font-weight:600; }
   .node.selected { box-shadow:0 0 0 1.5px var(--ink), 0 6px 16px rgba(0,0,0,0.12); }
   .node.pred-highlight { box-shadow:0 0 0 1.5px var(--pred-color), 0 3px 10px rgba(47,111,168,0.18); }
   .node.succ-highlight { box-shadow:0 0 0 1.5px var(--succ-color), 0 3px 10px rgba(189,106,30,0.18); }
@@ -232,9 +241,9 @@ function shrinkLastWaypoint(points, gap) {
 }
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", fg: "#3d4451", bg: "#e2e5ea" },
-  "진행 중": { label: "진행 중", fg: "#a8500a", bg: "#fde3c3" },
-  "달성": { label: "달성", fg: "#04785a", bg: "#c8f3e3" },
+  "시작 전": { label: "시작 전", fg: "#3d5a80", bg: "#dce7f2" },
+  "진행 중": { label: "진행 중", fg: "#c1600a", bg: "#ffdcac" },
+  "달성": { label: "달성", fg: "#8a9a91", bg: "#eef2ee" },
 };
 
 const STATUS_ICONS = {
@@ -443,6 +452,50 @@ function multiEdgePath(points) {
   return d;
 }
 
+function sideNormal(side) {
+  if (side === "right") return { x: 1, y: 0 };
+  if (side === "left") return { x: -1, y: 0 };
+  if (side === "top") return { x: 0, y: -1 };
+  return { x: 0, y: 1 }; // bottom
+}
+
+// Draws one bezier segment. When startSide/endSide are given, the curve's
+// tangent at that endpoint is forced perpendicular to that card face
+// (i.e. it leaves/arrives straight-on rather than at an angle).
+function bezierSegment(p1, p2, startSide, endSide) {
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const magX = Math.max(Math.abs(dx) / 2, 30), magY = Math.max(Math.abs(dy) / 2, 30);
+  let c1, c2;
+  if (startSide) {
+    const n = sideNormal(startSide);
+    const mag = (startSide === "left" || startSide === "right") ? magX : magY;
+    c1 = { x: p1.x + n.x * mag, y: p1.y + n.y * mag };
+  } else if (Math.abs(dx) >= Math.abs(dy)) {
+    c1 = { x: p1.x + magX * Math.sign(dx || 1), y: p1.y };
+  } else {
+    c1 = { x: p1.x, y: p1.y + magY * Math.sign(dy || 1) };
+  }
+  if (endSide) {
+    const n = sideNormal(endSide);
+    const mag = (endSide === "left" || endSide === "right") ? magX : magY;
+    c2 = { x: p2.x + n.x * mag, y: p2.y + n.y * mag };
+  } else if (Math.abs(dx) >= Math.abs(dy)) {
+    c2 = { x: p2.x - magX * Math.sign(dx || 1), y: p2.y };
+  } else {
+    c2 = { x: p2.x, y: p2.y - magY * Math.sign(dy || 1) };
+  }
+  return `C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${p2.x} ${p2.y}`;
+}
+
+function multiEdgePathWithSides(points, startSide, endSide) {
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const isFirst = i === 0, isLast = i === points.length - 2;
+    d += " " + bezierSegment(points[i], points[i + 1], isFirst ? startSide : null, isLast ? endSide : null);
+  }
+  return d;
+}
+
 function getFilterState() {
   const search = document.getElementById("search");
   const statusCbs = Array.from(document.querySelectorAll(".status-cb"));
@@ -601,6 +654,7 @@ function renderNodeDiv(n, w, h) {
   const emoji = n.icon || cat.emoji;
   const cardBg = STATUS_COLOR_MODE ? hexToRgba(meta.bg, 0.8) : "rgba(250,247,240,0.6)";
   const cardBorder = STATUS_COLOR_MODE ? meta.fg + "99" : "var(--line)";
+  const readyToStart = n.status === "시작 전" && (!n.predecessors || n.predecessors.length === 0);
   const catsHtml = n.categories.length
     ? `<div class="node-cats">${n.categories.map((c) => {
         const m = CATEGORY_META[c] || CATEGORY_META.__NONE__;
@@ -613,8 +667,9 @@ function renderNodeDiv(n, w, h) {
   const metaText = metaBits.length ? metaBits.join(" · ") : '<span class="meta-placeholder">시기·메모 없음</span>';
   const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
   const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
-  return `<div class="node ${n.overdue ? "overdue" : ""} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"
+  return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"
     style="${posStyle}${sizeStyle}background:${cardBg};border-color:${cardBorder};">
+    ${readyToStart ? '<div class="ready-badge" title="선행 목표가 없어요 — 지금 시작해도 좋아요">✨</div>' : ""}
     <div class="node-title">${emoji} ${esc(n.title)}</div>
     <div class="node-meta-line" data-id="${esc(n.id)}" data-date="${esc(n.targetDate ?? "")}" data-note="${esc(n.note ?? "")}">${metaText}</div>
     <div class="node-extra">
@@ -623,6 +678,7 @@ function renderNodeDiv(n, w, h) {
         <span class="status-label-text">${esc(meta.label)}</span>
         ${n.overdue ? '<span class="status-chip overdue-tag" title="지연됨">⚠ 지연됨</span>' : ""}
       </div>
+      ${readyToStart ? '<div class="ready-hint">✨ 선행 목표가 없어요 — 지금 시작해볼까요?</div>' : ""}
       ${catsHtml}
       <div class="extra-rel-section">
         ${extraRelRowHtml(n.id, "predecessors", "선행목표 추가")}
@@ -689,6 +745,7 @@ function buildChainView(nodes) {
 
   const placed = [];
   const edgeWaypoints = new Map();
+  const edgeSides = new Map();
   let blockY = CANVAS_TOP_GAP;
   for (const comp of chains) {
     const compSet = new Set(comp);
@@ -819,7 +876,6 @@ function buildChainView(nodes) {
       return { x: box.x + box.w * frac, y: box.y };
     }
 
-    const edgeSides = new Map();
     for (const [key, chain] of edgeChainIds) {
       const srcBox = posOfReal.get(chain[0]);
       const tgtBox = posOfReal.get(chain[chain.length - 1]);
@@ -868,7 +924,7 @@ function buildChainView(nodes) {
   const totalHeight = Math.max(blockY, 40);
   const singles = nodes.filter(n => singleIds.has(n.id)).sort((a, b) => a.title.localeCompare(b.title, "ko"));
 
-  return { placed, totalWidth, totalHeight, singles, seqEdges, edgeWaypoints };
+  return { placed, totalWidth, totalHeight, singles, seqEdges, edgeWaypoints, edgeSides };
 }
 
 function renderSequenceMode(filtered) {
@@ -883,7 +939,8 @@ function renderSequenceMode(filtered) {
   const edgePaths = view.seqEdges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const key = e.source + "->" + e.target;
     const pts = view.edgeWaypoints.get(key);
-    const d = pts ? multiEdgePath(shrinkLastWaypoint(pts, ARROW_END_GAP)) : (() => {
+    const sides = view.edgeSides.get(key);
+    const d = pts ? multiEdgePathWithSides(shrinkLastWaypoint(pts, ARROW_END_GAP), sides?.srcSide, sides?.tgtSide) : (() => {
       const s = nodeById.get(e.source), t = nodeById.get(e.target);
       const x1 = s.x + s.w, y1 = s.y + s.h / 2;
       const end = shrinkPoint(x1, y1, t.x, t.y + t.h / 2, ARROW_END_GAP);
