@@ -64,10 +64,13 @@
   .node { position:absolute; display:flex; flex-direction:column; justify-content:center; gap:3px; border:1px solid; border-radius:8px; padding:6px 8px; cursor:pointer; overflow:hidden; background-clip:padding-box; }
   .node:hover { filter:brightness(0.97); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
-  .node.selected { box-shadow:0 0 0 2px var(--ink); }
+  .node.selected { box-shadow:0 0 0 2px var(--ink); z-index:5; }
+  .node.related-highlight { box-shadow:0 0 0 2px var(--accent); z-index:4; }
+  .node.dimmed { opacity:0.3; }
+  .edge-highlight { stroke:var(--accent); stroke-width:2.5; opacity:1; }
   .status-chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; letter-spacing:0.2px; border-radius:999px; padding:2px 8px; width:fit-content; border:1px solid transparent; }
   .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); }
-  .node-title { font-size:12px; font-weight:500; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .extra-cats { display:flex; gap:3px; margin-top:1px; }
   .extra-cats span { width:6px; height:6px; border-radius:999px; display:inline-block; }
   .hidden { display:none !important; }
@@ -170,13 +173,13 @@
 </details>
 
 <script>
-const NODE_W = 156, NODE_H = 64, ROW_GAP = 8, LANE_PAD = 14;
+const NODE_W = 156, NODE_H = 64, ROW_GAP = 8, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
 const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", fg: "#3d4451", bg: "#e2e5ea" },
-  "진행 중": { label: "진행 중", fg: "#a8500a", bg: "#fde3c3" },
-  "달성": { label: "달성", fg: "#04785a", bg: "#c8f3e3" },
+  "시작 전": { label: "시작 전", fg: "#3d4451", bg: "#e2e5ea", icon: "○" },
+  "진행 중": { label: "진행 중", fg: "#a8500a", bg: "#fde3c3", icon: "▶" },
+  "달성": { label: "달성", fg: "#04785a", bg: "#c8f3e3", icon: "✓" },
 };
 
 const CATEGORY_ORDER = [
@@ -307,7 +310,7 @@ function buildLayout(nodes, mode) {
   }
 
   const lanes = [];
-  let cursorY = 0;
+  let cursorY = CANVAS_TOP_GAP;
   for (const cat of CATEGORY_ORDER) {
     let laneNodes;
     if (mode === "sequence") {
@@ -414,7 +417,7 @@ function renderStatic() {
 
   const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
   document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
-    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" ${key === "달성" ? "" : "checked"}><span class="dot" style="background:${meta.fg}"></span>${meta.label}</label>`
+    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" ${key === "달성" ? "" : "checked"}>${meta.icon} ${meta.label}</label>`
   ).join("");
   document.getElementById("category-filters").innerHTML = presentCats.map((c) => {
     const meta = CATEGORY_META[c];
@@ -526,8 +529,8 @@ function renderNodeDiv(n, w, h) {
   const bg = n.status === "진행 중" ? cat.bg2 : cat.bg;
   const extraCats = n.categories.slice(1);
   const statusHtml = n.overdue
-    ? `<span class="status-chip overdue-tag">지연됨</span>`
-    : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${meta.label}</span>`;
+    ? `<span class="status-chip overdue-tag">⚠ 지연됨</span>`
+    : `<span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${meta.icon} ${meta.label}</span>`;
   const extraDots = extraCats.length
     ? `<div class="extra-cats">${extraCats.map(c => `<span style="background:${(CATEGORY_META[c] || CATEGORY_META.__NONE__).fg}"></span>`).join("")}</div>` : "";
   const titleAttr = n.categories.length > 1 ? ` title="카테고리: ${esc(n.categories.map(c => CATEGORY_META[c]?.label ?? c).join(', '))}"` : "";
@@ -585,7 +588,7 @@ function buildChainView(nodes) {
   }
 
   const placed = [];
-  let blockY = 0;
+  let blockY = CANVAS_TOP_GAP;
   for (const comp of chains) {
     const compSet = new Set(comp);
     const indeg = new Map(comp.map(id => [id, predMap.get(id).filter(p => compSet.has(p)).length]));
@@ -615,6 +618,7 @@ function buildChainView(nodes) {
     const maxRank = Math.max(...comp.map(id => rank.get(id)));
 
     const rowOf = new Map();
+    // initial pass: rank 0 by title, then forward using predecessor barycenter
     for (let r = 0; r <= maxRank; r++) {
       const idsAtRank = (byRank.get(r) || []).slice();
       idsAtRank.sort((a, b) => {
@@ -626,6 +630,27 @@ function buildChainView(nodes) {
         return byId.get(a).title.localeCompare(byId.get(b).title, "ko");
       });
       idsAtRank.forEach((id, i) => rowOf.set(id, i));
+    }
+    // refine with alternating backward/forward barycenter sweeps to reduce crossings
+    const SWEEPS = 6;
+    for (let sweep = 0; sweep < SWEEPS; sweep++) {
+      const backward = sweep % 2 === 0;
+      const ranksToVisit = backward
+        ? Array.from({ length: maxRank }, (_, i) => maxRank - 1 - i)
+        : Array.from({ length: maxRank }, (_, i) => i + 1);
+      for (const r of ranksToVisit) {
+        const idsAtRank = (byRank.get(r) || []).slice();
+        idsAtRank.sort((a, b) => {
+          const neighborsA = (backward ? succMap.get(a) : predMap.get(a)).filter(p => compSet.has(p));
+          const neighborsB = (backward ? succMap.get(b) : predMap.get(b)).filter(p => compSet.has(p));
+          const curA = rowOf.get(a) ?? 0, curB = rowOf.get(b) ?? 0;
+          const avgA = neighborsA.length ? neighborsA.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsA.length : curA;
+          const avgB = neighborsB.length ? neighborsB.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsB.length : curB;
+          if (avgA !== avgB) return avgA - avgB;
+          return curA - curB;
+        });
+        idsAtRank.forEach((id, i) => rowOf.set(id, i));
+      }
     }
 
     const maxRow = Math.max(...comp.map(id => rowOf.get(id)));
@@ -694,10 +719,29 @@ function renderSequenceMode(filtered) {
 
 function wireCanvasInteractions() {
   const nodeEls = Array.from(document.querySelectorAll(".node"));
+  const edgeEls = Array.from(document.querySelectorAll("svg path[data-source]"));
+
+  function clearHighlight() {
+    nodeEls.forEach(x => x.classList.remove("selected", "related-highlight", "dimmed"));
+    edgeEls.forEach(x => x.classList.remove("edge-highlight"));
+  }
+
   nodeEls.forEach((el) => {
     el.addEventListener("click", () => {
-      nodeEls.forEach(x => x.classList.remove("selected"));
-      el.classList.add("selected");
+      if (el.classList.contains("selected")) { clearHighlight(); return; }
+      const n = GRAPH.nodes.find(x => x.id === el.dataset.id);
+      const relatedIds = new Set([...(n?.predecessors || []), ...(n?.successors || [])]);
+      clearHighlight();
+      nodeEls.forEach((other) => {
+        if (other === el) other.classList.add("selected");
+        else if (relatedIds.has(other.dataset.id)) other.classList.add("related-highlight");
+        else other.classList.add("dimmed");
+      });
+      edgeEls.forEach((edge) => {
+        if (edge.dataset.source === el.dataset.id || edge.dataset.target === el.dataset.id) {
+          edge.classList.add("edge-highlight");
+        }
+      });
     });
     el.addEventListener("dblclick", () => {
       const n = GRAPH.nodes.find(x => x.id === el.dataset.id);
