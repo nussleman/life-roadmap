@@ -8,10 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper:#faf7f0; --paper-raised:#f3efe4; --paper-hover:#ece7d9;
-    --ink:#2a2622; --ink-soft:#736b5e; --line:#ddd5c3;
-    --accent:#c62f45;
-    --pred-color:#2f6fa8; --succ-color:#bd6a1e;
+    --paper:#f4ecdc; --paper-raised:#ecdec2; --paper-hover:#e2cea3;
+    --ink:#2b2018; --ink-soft:#7d6c53; --line:#d3bd94;
+    --accent:#a8672a; --warn:#a13a2a;
+    --pred-color:#35607e; --succ-color:#a8672a;
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; overflow:hidden; }
@@ -31,8 +31,8 @@
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-  .goal-chip { font-size:12px; border:1px solid #c9820f; color:#8a5a0a; background:#fbf1de; border-radius:999px; padding:4px 10px; cursor:pointer; }
-  .goal-chip:hover { background:#f5e2bd; }
+  .goal-chip { font-size:12px; border:1px solid #a8672a; color:#7a4d1e; background:#f5e6ce; border-radius:999px; padding:4px 10px; cursor:pointer; }
+  .goal-chip:hover { background:#eed6ac; }
   .ctrl-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; }
   .ctrl-btn:hover { background:var(--paper-hover); }
   .ctrl-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
@@ -62,14 +62,14 @@
   .timeline-scroll { flex:1; overflow-x:auto; overflow-y:visible; position:relative; }
   .tick-row { position:sticky; top:0; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
   .tick { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); transform:translateX(2px); }
-  .today-label { position:absolute; top:5px; font-size:11px; color:var(--accent); font-weight:500; transform:translateX(4px); }
+  .today-label { position:absolute; top:5px; font-size:11px; color:var(--warn); font-weight:500; transform:translateX(4px); }
   .tbd-label { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); }
   .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
   .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.98); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
-  .node.overdue { border-style:dashed; border-color:var(--accent) !important; }
+  .node.overdue { border-style:dashed; border-color:var(--warn) !important; }
   .node.ready-to-start { border-color:#e0a53c !important; }
   .ready-badge {
     position:absolute; top:-9px; right:-9px; width:20px; height:20px; border-radius:999px;
@@ -88,17 +88,18 @@
   .edge-dimmed { opacity:0.15 !important; }
   .status-chip { display:inline-flex; align-items:center; justify-content:center; line-height:0; border-radius:999px; width:20px; height:20px; flex-shrink:0; border:1px solid transparent; }
   .status-chip svg { display:block; }
-  .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); font-size:10px; width:auto; padding:0 7px; border-radius:999px; }
+  .status-chip.overdue-tag { background:#f5e0da; color:var(--warn); border-color:var(--warn); font-size:10px; width:auto; padding:0 7px; border-radius:999px; }
   .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
   .node-meta-line { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-soft); cursor:text; border-radius:4px; padding:2px 2px; margin:-2px -2px; }
   .node-meta-line:hover { background:rgba(0,0,0,0.045); }
-  .meta-date { font-size:11px; font-weight:600; color:var(--ink-soft); letter-spacing:0.2px; }
-  .meta-note { font-size:11px; color:var(--ink-soft); opacity:0.82; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.35; padding-top:4px; border-top:1px dashed var(--line); }
+  .node-meta-line:empty { padding:0; margin:0; min-height:0; }
+  .meta-date { font-size:11px; font-weight:600; color:var(--ink-soft); opacity:0.78; letter-spacing:0.2px; }
+  .meta-note { font-size:11px; font-weight:500; color:var(--ink-soft); opacity:0.78; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.35; padding-top:4px; border-top:1px dashed var(--line); }
   .meta-note.no-divider { border-top:none; padding-top:0; }
   .meta-placeholder { opacity:0.55; font-style:italic; }
-  .node.achieved-card { transform:scale(0.84); transform-origin:top left; }
-  .node.achieved-card .node-title { opacity:0.5; }
-  .node.achieved-card .node-extra { transform:scale(1.19); transform-origin:top left; }
+  .node.achieved-card { padding:6px 9px; gap:4px; }
+  .node.achieved-card .node-title { font-size:11.5px; opacity:0.68; -webkit-line-clamp:8; }
+  .node.achieved-card .meta-date, .node.achieved-card .meta-note { font-size:9.5px; opacity:0.52; }
   .meta-edit { display:flex; gap:4px; align-items:center; }
   .meta-edit input[type="date"] { font-size:10.5px; padding:1px 3px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); width:106px; }
   .meta-edit input[type="text"] { font-size:11px; padding:1px 5px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); flex:1; min-width:40px; }
@@ -134,7 +135,7 @@
   .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; background:var(--paper-raised); cursor:pointer; }
   .pill-date { opacity:0.6; margin-left:4px; }
   #loading, #error { padding:60px 24px; text-align:center; color:var(--ink-soft); }
-  #error { color:var(--accent); }
+  #error { color:var(--warn); }
   .overlay { position:fixed; inset:0; background:rgba(20,20,18,0.4); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
   .modal { width:460px; max-width:92vw; max-height:88vh; overflow-y:auto; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.14); }
   .modal-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
@@ -160,13 +161,13 @@
   .modal-actions-right { display:flex; gap:8px; }
   .btn { font-size:13px; padding:8px 14px; border-radius:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .btn.danger { background:#fdeceb; border-color:#f0b8b3; color:#a02a1f; }
+  .btn.danger { background:#f5e0da; border-color:#dba593; color:var(--warn); }
   .btn:hover { background:var(--paper-hover); }
-  .btn.primary:hover { background:#bd2740; }
-  .btn.danger:hover { background:#f9d9d5; }
+  .btn.primary:hover { background:#8a5320; }
+  .btn.danger:hover { background:#eecabb; }
   .modal-msg { font-size:12px; margin-top:8px; min-height:16px; }
   .modal-msg.ok { color:#0f8f6c; }
-  .modal-msg.err { color:var(--accent); }
+  .modal-msg.err { color:var(--warn); }
   .open-link { font-size:12px; color:#1c6fb0; text-decoration:none; }
   .content-box { border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; background:var(--paper-raised); max-height:220px; overflow-y:auto; }
   .content-box p { margin:0 0 8px; }
@@ -247,9 +248,9 @@ function shrinkLastWaypoint(points, gap) {
 }
 
 const STATUS_META = {
-  "시작 전": { label: "시작 전", fg: "#3d5a80", bg: "#dce7f2" },
-  "진행 중": { label: "진행 중", fg: "#c1600a", bg: "#ffdcac" },
-  "달성": { label: "달성", fg: "#8a9a91", bg: "#eef2ee" },
+  "시작 전": { label: "시작 전", fg: "#33587a", bg: "#e1e8ee" },
+  "진행 중": { label: "진행 중", fg: "#a8590c", bg: "#f7dcae" },
+  "달성": { label: "달성", fg: "#8c7c62", bg: "#ece2cd" },
 };
 
 const STATUS_ICONS = {
@@ -264,15 +265,15 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_META = {
-  "💪🏻 건강/피트니스": { fg: "#0f8f6c", bg: "#e6f7f1", bg2: "#c3ecdc", bgFaint: "#f3f8f5", label: "건강/피트니스", emoji: "🏃" },
-  "🍀 정신/마음": { fg: "#6b8f1f", bg: "#f2f7e2", bg2: "#dcecc0", bgFaint: "#f6f7ef", label: "정신/마음", emoji: "🧘" },
-  "🩵 사랑/관계/가족": { fg: "#c23d68", bg: "#fdeef3", bg2: "#f8d3e0", bgFaint: "#faf2f2", label: "사랑/관계/가족", emoji: "💛" },
-  "🏠 라이프 스타일": { fg: "#a8681c", bg: "#faf1e2", bg2: "#f2ddb9", bgFaint: "#f8f2e6", label: "라이프 스타일", emoji: "🏠" },
-  "🪙 자산관리": { fg: "#a8830a", bg: "#fbf5dc", bg2: "#f5e8ad", bgFaint: "#f8f3e3", label: "자산관리", emoji: "💰" },
-  "💼 일/커리어": { fg: "#1c6fb0", bg: "#e8f2fb", bg2: "#cce3f7", bgFaint: "#f1f5f7", label: "일/커리어", emoji: "💼" },
-  "✍🏻 예술/창작": { fg: "#7a4fc9", bg: "#f2ecfc", bg2: "#e0d0f7", bgFaint: "#f5f2f8", label: "예술/창작", emoji: "🎨" },
-  "✈️ 여행/모험": { fg: "#c14a2c", bg: "#fbeae4", bg2: "#f7d2c2", bgFaint: "#f8f1ec", label: "여행/모험", emoji: "✈️" },
-  "__NONE__": { fg: "#6b6b66", bg: "#f1f1ee", bg2: "#dedcd5", bgFaint: "#f5f3ee", label: "기타", emoji: "⭐" },
+  "💪🏻 건강/피트니스": { fg: "#2f6b4a", bg: "#e2ede3", bg2: "#c0dac6", bgFaint: "#eef3ee", label: "건강/피트니스", emoji: "🏃" },
+  "🍀 정신/마음": { fg: "#726b2c", bg: "#efeddc", bg2: "#dcd6ae", bgFaint: "#f4f2e7", label: "정신/마음", emoji: "🧘" },
+  "🩵 사랑/관계/가족": { fg: "#8a3350", bg: "#f3e3e8", bg2: "#e4c1cd", bgFaint: "#f6eef1", label: "사랑/관계/가족", emoji: "💛" },
+  "🏠 라이프 스타일": { fg: "#7a5230", bg: "#f0e2ce", bg2: "#ddc298", bgFaint: "#f4ece0", label: "라이프 스타일", emoji: "🏠" },
+  "🪙 자산관리": { fg: "#8a6a12", bg: "#f5ecc9", bg2: "#ecd68f", bgFaint: "#f7f0dc", label: "자산관리", emoji: "💰" },
+  "💼 일/커리어": { fg: "#2d4f70", bg: "#e1e8ef", bg2: "#bfd0e0", bgFaint: "#eef1f5", label: "일/커리어", emoji: "💼" },
+  "✍🏻 예술/창작": { fg: "#5c3f7a", bg: "#eae1f0", bg2: "#cfbce1", bgFaint: "#f1ecf4", label: "예술/창작", emoji: "🎨" },
+  "✈️ 여행/모험": { fg: "#a1502c", bg: "#f3e1d6", bg2: "#e6c0aa", bgFaint: "#f6ece4", label: "여행/모험", emoji: "✈️" },
+  "__NONE__": { fg: "#4a4038", bg: "#eae3d7", bg2: "#d5c8b6", bgFaint: "#f1ece2", label: "기타", emoji: "⭐" },
 };
 
 function esc(str) {
@@ -288,7 +289,7 @@ function todayStr() { return new Date().toISOString().slice(0, 10); }
 let GRAPH = null;
 let VIEW_MODE = "sequence";
 let ACTIVE_PERIOD = null;
-let STATUS_COLOR_MODE = false;
+let STATUS_COLOR_MODE = true;
 let FULL_ORDER = [];
 let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
 
@@ -538,7 +539,7 @@ function renderStatic() {
     <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
     ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
     <div id="right-controls">
-      <button class="ctrl-btn" id="statuscolor-btn">상태별 색칠</button>
+      <button class="ctrl-btn${STATUS_COLOR_MODE ? " active" : ""}" id="statuscolor-btn">상태별 색칠</button>
       <button class="ctrl-btn" id="mode-btn"></button>
       <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
     </div>
@@ -622,9 +623,9 @@ function renderTimeMode(filtered) {
     `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
 
   const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(0,0,0,0.015);" : ""}"></div>`).join("");
-  const tickLines = monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1"/>`).join("");
-  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#d6304a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e2e2de" stroke-width="1" stroke-dasharray="2 4"/>`;
+  const tickLines = monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1"/>`).join("");
+  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#a13a2a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1" stroke-dasharray="2 4"/>`;
 
   const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const s = nodeById.get(e.source), t = nodeById.get(e.target);
@@ -633,7 +634,7 @@ function renderTimeMode(filtered) {
     const d = edgePathD(x1, y1, end.x, end.y);
     const dashed = e.kind === "related" ? 'stroke-dasharray="4 4"' : "";
     const marker = e.kind === "sequence" ? 'marker-end="url(#arrowhead)"' : "";
-    return `<path d="${d}" fill="none" stroke="#b7b7ae" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+    return `<path d="${d}" fill="none" stroke="#b3a07c" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
   const nodeDivs = layout.lanes.flatMap(l => l.nodes).map(n => renderNodeDiv(n, NODE_W, NODE_H)).join("");
@@ -644,7 +645,7 @@ function renderTimeMode(filtered) {
     ${laneBg}
     <svg width="${layout.totalWidth}" height="${layout.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
       <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#b7b7ae" stroke-width="1.5"/>
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#b3a07c" stroke-width="1.5"/>
       </marker></defs>
       ${tickLines}${tbdDivider}${todayLine}${edgePaths}
     </svg>
@@ -658,7 +659,7 @@ function renderNodeDiv(n, w, h) {
   const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
   const meta = STATUS_META[n.status];
   const emoji = n.icon || cat.emoji;
-  const cardBg = STATUS_COLOR_MODE ? hexToRgba(meta.bg, 0.8) : "rgba(250,247,240,0.6)";
+  const cardBg = STATUS_COLOR_MODE ? hexToRgba(meta.bg, 0.8) : "rgba(244,236,220,0.65)";
   const cardBorder = STATUS_COLOR_MODE ? meta.fg + "99" : "var(--line)";
   const readyToStart = n.status === "시작 전" && (!n.predecessors || n.predecessors.length === 0);
   const catsHtml = n.categories.length
@@ -950,7 +951,7 @@ function renderSequenceMode(filtered) {
       const end = shrinkPoint(x1, y1, t.x, t.y + t.h / 2, ARROW_END_GAP);
       return edgePathD(x1, y1, end.x, end.y);
     })();
-    return `<path d="${d}" fill="none" stroke="#8a8578" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+    return `<path d="${d}" fill="none" stroke="#96805f" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
   const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, n.h)).join("");
@@ -960,7 +961,7 @@ function renderSequenceMode(filtered) {
   document.getElementById("canvas").innerHTML = `
     <svg width="${view.totalWidth}" height="${view.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
       <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#8a8578" stroke-width="1.5"/>
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#96805f" stroke-width="1.5"/>
       </marker></defs>
       ${edgePaths}
     </svg>
@@ -1135,7 +1136,6 @@ function metaLineDisplayHtml(date, note, status) {
   const parts = [];
   if (dateText) parts.push(`<span class="meta-date">${esc(dateText)}</span>`);
   if (note) parts.push(`<span class="meta-note${dateText ? "" : " no-divider"}">${esc(note)}</span>`);
-  if (!parts.length) return '<span class="meta-placeholder">시기·메모 없음</span>';
   return parts.join("");
 }
 
