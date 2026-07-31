@@ -25,9 +25,6 @@
   a { color: inherit; }
   body { display:flex; flex-direction:column; }
   #topbar { flex-shrink:0; background:var(--paper); border-bottom:1px solid var(--line); }
-  .banner { padding:6px 24px; font-size:11px; color:var(--ink-soft); border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; background:var(--paper-raised); }
-  .banner button { font-size:11px; background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
-  .banner button:hover { background:var(--paper-hover); color:var(--ink); }
   header { padding:14px 24px 12px; }
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
@@ -68,9 +65,9 @@
   .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
-  .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:none; border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; box-shadow:0 0 0 1px var(--glow-color, var(--line)), 0 0 8px var(--glow-color, var(--line)); transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
+  .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:none; border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; box-shadow:0 0 6px 0px var(--glow-color, var(--line)), 0 0 14px 0px var(--glow-color, var(--line)); transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.98); }
-  .node.overdue { box-shadow:0 0 0 1.5px var(--warn), 0 0 10px rgba(161,58,42,0.55); }
+  .node.overdue { box-shadow:0 0 8px 0px var(--warn), 0 0 16px 0px rgba(161,58,42,0.6); }
   .ready-badge {
     position:absolute; top:-8px; right:-8px; width:16px; height:16px; border-radius:999px;
     background:linear-gradient(135deg,#fdecb0,#c9840f); display:flex; align-items:center; justify-content:center;
@@ -182,10 +179,6 @@
 </head>
 <body>
 <div id="topbar">
-  <div class="banner">
-    <span>이 페이지는 열 때마다 노션에서 실시간으로 데이터를 읽어와요. 아무나 이 URL을 알면 보고 수정할 수 있어요.</span>
-    <button id="settings-btn">Worker 설정</button>
-  </div>
   <header>
     <h1>인생 로드맵</h1>
     <div class="summary" id="summary"></div>
@@ -227,6 +220,8 @@
 <script>
 const NODE_W = 190, NODE_H = 66, ROW_GAP = 10, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
 const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
+const YEAR_SUBCOL_GAP = 14, YEAR_COL_PAD = 16;
+const YEAR_COL_W = NODE_W * 2 + YEAR_SUBCOL_GAP + YEAR_COL_PAD * 2;
 const ARROW_END_GAP = 6;
 
 function hexToRgba(hex, alpha) {
@@ -326,13 +321,15 @@ function ensureWorkerUrl() {
   return true;
 }
 
-document.getElementById("settings-btn").addEventListener("click", () => {
+function openWorkerSettings() {
   const input = prompt("Worker URL", WORKER_URL);
   if (input === null) return;
   WORKER_URL = input.replace(/\/$/, "");
   localStorage.setItem("roadmap_worker_url", WORKER_URL);
   load();
-});
+}
+document.querySelector("h1").addEventListener("dblclick", openWorkerSettings);
+document.getElementById("settings-btn")?.addEventListener("click", openWorkerSettings);
 
 async function load() {
   document.getElementById("app").classList.add("hidden");
@@ -362,23 +359,25 @@ async function load() {
   }
 }
 
-function buildLayout(nodes, mode) {
-  let xFor, tbdX, todayX, minM, maxM, hasTimeAxis;
+function yearOf(dateStr) {
+  if (!dateStr) return null;
+  return parseInt(dateStr.slice(0, 4), 10);
+}
 
-  if (mode === "sequence") {
-    hasTimeAxis = false;
-    tbdX = null; todayX = null; minM = null; maxM = null;
-  } else {
-    hasTimeAxis = true;
-    const dated = nodes.filter(n => n.targetDate);
-    const monthVals = dated.map(n => monthsIndex(n.targetDate));
-    minM = monthVals.length ? Math.min(...monthVals) - 1 : monthsIndex("2026-01-01");
-    maxM = monthVals.length ? Math.max(...monthVals) + 1 : monthsIndex("2026-12-01");
-    tbdX = TIMELINE_START + (maxM - minM) * PX_PER_MONTH + 70;
-    xFor = (n) => n.targetDate ? TIMELINE_START + (monthsIndex(n.targetDate) - minM) * PX_PER_MONTH : tbdX;
-    const todayM = monthsIndex(todayStr());
-    todayX = TIMELINE_START + (todayM - minM) * PX_PER_MONTH;
-  }
+function buildLayout(nodes) {
+  const dated = nodes.filter(n => n.targetDate);
+  const years = Array.from(new Set(dated.map(n => yearOf(n.targetDate)))).sort((a, b) => a - b);
+  const hasTBD = nodes.some(n => !n.targetDate);
+  const colKeys = [...years, ...(hasTBD ? ["TBD"] : [])];
+  if (colKeys.length === 0) colKeys.push(new Date().getFullYear());
+
+  const colIndex = new Map(colKeys.map((k, i) => [k, i]));
+  const colX = (key) => TIMELINE_START + colIndex.get(key) * YEAR_COL_W;
+  const subX = (key, subcol) => colX(key) + YEAR_COL_PAD + subcol * (NODE_W + YEAR_SUBCOL_GAP);
+
+  const todayYear = new Date().getFullYear();
+  const todayX = colIndex.has(todayYear) ? colX(todayYear) + YEAR_COL_W / 2 : null;
+  const tbdX = hasTBD ? colX("TBD") + YEAR_COL_W / 2 : null;
 
   const byLane = new Map(CATEGORY_ORDER.map(c => [c, []]));
   for (const n of nodes) {
@@ -390,53 +389,42 @@ function buildLayout(nodes, mode) {
   const lanes = [];
   let cursorY = CANVAS_TOP_GAP;
   for (const cat of CATEGORY_ORDER) {
-    let laneNodes;
-    if (mode === "sequence") {
-      // Per-lane logical order only — no date-proportional spacing, no cross-lane gaps.
-      laneNodes = byLane.get(cat).slice().sort((a, b) => {
-        if (a.targetDate && b.targetDate) return a.targetDate.localeCompare(b.targetDate);
-        if (a.targetDate) return -1;
-        if (b.targetDate) return 1;
-        return a.title.localeCompare(b.title, "ko");
-      });
-    } else {
-      laneNodes = byLane.get(cat).slice().sort((a, b) => xFor(a) - xFor(b));
+    const laneNodes = byLane.get(cat);
+    if (!laneNodes.length) continue;
+    const byCol = new Map();
+    for (const n of laneNodes) {
+      const key = n.targetDate ? yearOf(n.targetDate) : "TBD";
+      if (!byCol.has(key)) byCol.set(key, []);
+      byCol.get(key).push(n);
     }
-    const tracks = [];
+    for (const arr of byCol.values()) {
+      arr.sort((a, b) => (a.targetDate ?? "").localeCompare(b.targetDate ?? "") || a.title.localeCompare(b.title, "ko"));
+    }
+    let maxRows = 1;
     const placed = [];
-    laneNodes.forEach((n, idx) => {
-      const x = mode === "sequence" ? TIMELINE_START + idx * SEQ_STEP : xFor(n);
-      let track = tracks.findIndex(end => x > end + 10);
-      if (track === -1) { track = tracks.length; tracks.push(0); }
-      tracks[track] = x + NODE_W;
-      const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
-      placed.push({ ...n, x, subrow: track, overdue });
-    });
-    if (placed.length === 0) continue;
-    const laneHeight = Math.max(1, tracks.length) * (NODE_H + ROW_GAP) + LANE_PAD * 2;
+    for (const [key, arr] of byCol) {
+      arr.forEach((n, idx) => {
+        const subcol = idx % 2, subrow = Math.floor(idx / 2);
+        maxRows = Math.max(maxRows, subrow + 1);
+        const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
+        placed.push({ ...n, x: subX(key, subcol), subrow, overdue });
+      });
+    }
+    const laneHeight = maxRows * (NODE_H + ROW_GAP) + LANE_PAD * 2;
     for (const p of placed) p.y = cursorY + LANE_PAD + p.subrow * (NODE_H + ROW_GAP);
     lanes.push({ cat, y: cursorY, height: laneHeight, nodes: placed });
     cursorY += laneHeight + 4;
   }
 
-  let totalWidth;
-  if (mode === "sequence") {
-    const maxX = Math.max(TIMELINE_START, ...lanes.flatMap(l => l.nodes.map(n => n.x)));
-    totalWidth = maxX + NODE_W + 60;
-  } else {
-    totalWidth = tbdX + NODE_W + 60;
-  }
+  const totalWidth = colKeys.length * YEAR_COL_W + TIMELINE_START + 40;
+  const colTicks = colKeys.map(key => ({
+    x: colX(key) + YEAR_COL_W / 2,
+    left: colX(key),
+    label: key === "TBD" ? "날짜 미정" : `${key}년`,
+    isTBD: key === "TBD",
+  }));
 
-  return { lanes, totalWidth, totalHeight: cursorY + 20, todayX, tbdX, minM, maxM, hasTimeAxis };
-}
-
-function monthTicks(minM, maxM) {
-  const ticks = [];
-  for (let m = minM; m <= maxM; m++) {
-    const mo = (m % 12) + 1;
-    if (mo === 1 || m === minM) ticks.push({ x: TIMELINE_START + (m - minM) * PX_PER_MONTH, label: String(Math.floor(m / 12)) });
-  }
-  return ticks;
+  return { lanes, totalWidth, totalHeight: cursorY + 20, todayX, tbdX, colTicks };
 }
 
 function edgePathD(x1, y1, x2, y2) {
@@ -585,7 +573,7 @@ function rerenderCanvas() {
   const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
 
   const modeBtn = document.getElementById("mode-btn");
-  if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "시간순 보기";
+  if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "연도별 보기";
 
   const laneLabelsEl = document.getElementById("lane-labels");
   const singlesEl = document.getElementById("singles-grid");
@@ -602,7 +590,7 @@ function rerenderCanvas() {
 }
 
 function renderTimeMode(filtered) {
-  const layout = buildLayout(filtered, "time");
+  const layout = buildLayout(filtered);
   const nodeById = new Map();
   for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
   FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
@@ -617,19 +605,19 @@ function renderTimeMode(filtered) {
   }).join("");
 
   const tickRow = document.getElementById("tick-row");
-  const ticks = monthTicks(layout.minM, layout.maxM);
   tickRow.style.width = layout.totalWidth + "px";
   tickRow.style.height = "26px";
   tickRow.style.borderBottom = "1px solid var(--line)";
   tickRow.innerHTML =
-    ticks.map(t => `<div class="tick" style="left:${t.x}px">${esc(t.label)}</div>`).join("") +
-    `<div class="today-label" style="left:${layout.todayX}px">오늘</div>` +
-    `<div class="tbd-label" style="left:${layout.tbdX}px">날짜 미정</div>`;
+    layout.colTicks.map(t => `<div class="${t.isTBD ? "tbd-label" : "tick"}" style="left:${t.x}px;transform:translateX(-50%);">${esc(t.label)}</div>`).join("") +
+    (layout.todayX != null ? `<div class="today-label" style="left:${layout.todayX}px;transform:translateX(-50%);">오늘</div>` : "");
 
-  const laneBg = layout.lanes.map((lane, i) => `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;${i % 2 ? "background:rgba(0,0,0,0.015);" : ""}"></div>`).join("");
-  const tickLines = monthTicks(layout.minM, layout.maxM).map(t => `<line x1="${t.x}" y1="0" x2="${t.x}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1"/>`).join("");
-  const todayLine = `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#a13a2a" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-  const tbdDivider = `<line x1="${layout.tbdX - 30}" y1="0" x2="${layout.tbdX - 30}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1" stroke-dasharray="2 4"/>`;
+  const laneBg = layout.lanes.map((lane) => {
+    const meta = CATEGORY_META[lane.cat];
+    return `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;background:${meta.bgFaint};"></div>`;
+  }).join("");
+  const tickLines = layout.colTicks.slice(1).map(t => `<line x1="${t.left}" y1="0" x2="${t.left}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1"/>`).join("");
+  const todayLine = layout.todayX != null ? `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#a13a2a" stroke-width="1.5" stroke-dasharray="3 3"/>` : "";
 
   const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const s = nodeById.get(e.source), t = nodeById.get(e.target);
@@ -651,7 +639,7 @@ function renderTimeMode(filtered) {
       <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
         <path d="M2 1L8 5L2 9" fill="none" stroke="#b3a07c" stroke-width="1.5"/>
       </marker></defs>
-      ${tickLines}${tbdDivider}${todayLine}${edgePaths}
+      ${tickLines}${todayLine}${edgePaths}
     </svg>
     ${nodeDivs}
   `;
@@ -676,7 +664,7 @@ function renderNodeDiv(n, w, h) {
   const achievedClass = n.status === "달성" ? "achieved-card" : "";
   const progressClass = n.status === "진행 중" ? "progress-glow" : "";
   const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
-  const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
+  const sizeStyle = (w != null ? `width:${w}px;` : "") + (h != null ? `height:${h}px;` : "");
   return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""} ${achievedClass} ${progressClass}" data-id="${esc(n.id)}"
     style="${posStyle}${sizeStyle}background:${cardBg};--glow-color:${cardBorder};">
     ${readyToStart ? '<div class="ready-badge" title="선행 목표가 없어요 — 지금 시작해도 좋아요">💡</div>' : ""}
@@ -747,7 +735,7 @@ function buildChainView(nodes) {
     const title = byId.get(id)?.title || "";
     const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
     const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
-    const h = Math.min(Math.max(NODE_H, 40 + lines * 19 + 16), 170);
+    const h = Math.min(Math.max(NODE_H, 46 + lines * 19 + 16), 190);
     return { w, h };
   }
 
@@ -961,7 +949,7 @@ function renderSequenceMode(filtered) {
     return `<path d="${d}" fill="none" stroke="#96805f" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
-  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, n.h)).join("");
+  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, null)).join("");
 
   document.getElementById("canvas").style.width = view.totalWidth + "px";
   document.getElementById("canvas").style.height = view.totalHeight + "px";
