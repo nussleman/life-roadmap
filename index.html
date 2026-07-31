@@ -90,9 +90,15 @@
   .status-chip svg { display:block; }
   .status-chip.overdue-tag { background:#fdeceb; color:var(--accent); border-color:var(--accent); font-size:10px; width:auto; padding:0 7px; border-radius:999px; }
   .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
-  .node-meta-line { font-size:11px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:text; border-radius:4px; padding:1px 2px; margin:-1px -2px; }
+  .node-meta-line { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-soft); cursor:text; border-radius:4px; padding:2px 2px; margin:-2px -2px; }
   .node-meta-line:hover { background:rgba(0,0,0,0.045); }
+  .meta-date { font-size:11px; font-weight:600; color:var(--ink-soft); letter-spacing:0.2px; }
+  .meta-note { font-size:11px; color:var(--ink-soft); opacity:0.82; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.35; padding-top:4px; border-top:1px dashed var(--line); }
+  .meta-note.no-divider { border-top:none; padding-top:0; }
   .meta-placeholder { opacity:0.55; font-style:italic; }
+  .node.achieved-card { transform:scale(0.84); transform-origin:top left; }
+  .node.achieved-card .node-title { opacity:0.5; }
+  .node.achieved-card .node-extra { transform:scale(1.19); transform-origin:top left; }
   .meta-edit { display:flex; gap:4px; align-items:center; }
   .meta-edit input[type="date"] { font-size:10.5px; padding:1px 3px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); width:106px; }
   .meta-edit input[type="text"] { font-size:11px; padding:1px 5px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); flex:1; min-width:40px; }
@@ -661,13 +667,11 @@ function renderNodeDiv(n, w, h) {
         return `<span class="cat-tag" style="color:${m.fg};background:${m.bg}">${m.emoji} ${esc(m.label)}</span>`;
       }).join("")}</div>`
     : "";
-  const metaBits = [];
-  if (n.targetDate) metaBits.push(esc(n.targetDate));
-  if (n.note) metaBits.push(esc(n.note));
-  const metaText = metaBits.length ? metaBits.join(" · ") : '<span class="meta-placeholder">시기·메모 없음</span>';
+  const metaText = metaLineDisplayHtml(n.targetDate, n.note, n.status);
+  const achievedClass = n.status === "달성" ? "achieved-card" : "";
   const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
   const sizeStyle = (w != null && h != null) ? `width:${w}px;height:${h}px;` : "";
-  return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""}" data-id="${esc(n.id)}"
+  return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""} ${achievedClass}" data-id="${esc(n.id)}"
     style="${posStyle}${sizeStyle}background:${cardBg};border-color:${cardBorder};">
     ${readyToStart ? '<div class="ready-badge" title="선행 목표가 없어요 — 지금 시작해도 좋아요">✨</div>' : ""}
     <div class="node-title">${emoji} ${esc(n.title)}</div>
@@ -1118,11 +1122,21 @@ async function addRelationFromHover(nodeId, relType, targetId) {
   }
 }
 
-function metaLineDisplayHtml(date, note) {
-  const bits = [];
-  if (date) bits.push(esc(date));
-  if (note) bits.push(esc(note));
-  return bits.length ? bits.join(" · ") : '<span class="meta-placeholder">시기·메모 없음</span>';
+function formatPeriodKorean(dateStr) {
+  if (!dateStr) return null;
+  const [y, m] = dateStr.split("-").map(Number);
+  return `${String(y).slice(2)}년 ${m}월`;
+}
+
+function metaLineDisplayHtml(date, note, status) {
+  const dateText = date
+    ? (status === "달성" ? `${formatPeriodKorean(date)}에 달성!` : formatPeriodKorean(date))
+    : (status === "달성" ? "달성!" : null);
+  const parts = [];
+  if (dateText) parts.push(`<span class="meta-date">${esc(dateText)}</span>`);
+  if (note) parts.push(`<span class="meta-note${dateText ? "" : " no-divider"}">${esc(note)}</span>`);
+  if (!parts.length) return '<span class="meta-placeholder">시기·메모 없음</span>';
+  return parts.join("");
 }
 
 function wireMetaLineEditing() {
@@ -1140,6 +1154,8 @@ function startMetaEdit(el) {
   const id = el.dataset.id;
   const date = el.dataset.date;
   const note = el.dataset.note;
+  const editingNode = GRAPH.nodes.find(x => x.id === id);
+  const status = editingNode ? editingNode.status : null;
   el.innerHTML = `
     <div class="meta-edit">
       <input type="date" class="meta-edit-date" value="${esc(date)}">
@@ -1154,7 +1170,7 @@ function startMetaEdit(el) {
   function revert() {
     el.dataset.date = date;
     el.dataset.note = note;
-    el.innerHTML = metaLineDisplayHtml(date, note);
+    el.innerHTML = metaLineDisplayHtml(date, note, status);
   }
   async function save() {
     if (settled) return;
@@ -1176,7 +1192,7 @@ function startMetaEdit(el) {
       if (node) { node.targetDate = newDate; node.note = newNote; }
       el.dataset.date = newDate || "";
       el.dataset.note = newNote || "";
-      el.innerHTML = metaLineDisplayHtml(newDate, newNote);
+      el.innerHTML = metaLineDisplayHtml(newDate, newNote, status);
     } catch (err) {
       alert("저장하지 못했어요: " + err.message);
       revert();
