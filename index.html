@@ -12,6 +12,8 @@
     --ink:#2b2018; --ink-soft:#7d6c53; --line:#d3bd94;
     --accent:#a8672a; --warn:#a13a2a;
     --pred-color:#35607e; --succ-color:#a8672a;
+    --wood-dark:#241a12; --wood-mid:#3c2c1d; --wood-line:#54402c;
+    --cream:#f1e4c9; --cream-soft:#c7ae87;
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; overflow:hidden; }
@@ -21,35 +23,37 @@
     opacity:0.5; mix-blend-mode:multiply;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; }
+  h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; color:var(--cream); }
   a { color: inherit; }
   body { display:flex; flex-direction:column; }
-  #topbar { flex-shrink:0; background:var(--paper); border-bottom:1px solid var(--line); }
-  .banner { padding:6px 24px; font-size:11px; color:var(--ink-soft); border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; background:var(--paper-raised); }
-  .banner button { font-size:11px; background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
+  #topbar { flex-shrink:0; background:var(--wood-dark); border-bottom:1px solid var(--wood-line); }
+  .banner { padding:6px 24px; font-size:11px; color:var(--cream-soft); border-bottom:1px solid var(--wood-line); display:flex; gap:10px; align-items:center; background:#1c140d; }
+  .banner button { font-size:11px; background:var(--wood-mid); border:1px solid var(--wood-line); color:var(--cream-soft); border-radius:6px; padding:2px 8px; cursor:pointer; }
+  .banner button:hover { background:var(--wood-line); color:var(--cream); }
   header { padding:14px 24px 12px; }
-  .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
-  .summary b { color:var(--ink); font-weight:500; }
+  .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--cream-soft); flex-wrap:wrap; align-items:center; }
+  .summary b { color:var(--cream); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .goal-chip { font-size:12px; border:1px solid #a8672a; color:#7a4d1e; background:#f5e6ce; border-radius:999px; padding:4px 10px; cursor:pointer; }
   .goal-chip:hover { background:#eed6ac; }
-  .ctrl-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; }
-  .ctrl-btn:hover { background:var(--paper-hover); }
-  .ctrl-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .ctrl-btn { font-size:12px; border:1px solid var(--wood-line); background:var(--wood-mid); color:var(--cream-soft); border-radius:6px; padding:4px 10px; cursor:pointer; }
+  .ctrl-btn:hover { background:var(--wood-line); color:var(--cream); }
+  .ctrl-btn.active { background:var(--accent); color:#1c140d; border-color:var(--accent); font-weight:600; box-shadow:0 0 0 1px rgba(168,103,42,0.35), 0 0 10px rgba(184,127,58,0.45); }
   #right-controls { display:flex; gap:6px; margin-left:auto; }
   .layout { display:flex; flex:1; min-height:0; }
-  aside { width:190px; flex-shrink:0; border-right:1px solid var(--line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
-  .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
+  aside { width:190px; flex-shrink:0; background:var(--wood-dark); border-right:1px solid var(--wood-line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
+  .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--cream-soft); margin:0 0 8px; }
   .section { margin-bottom:18px; }
-  #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
-  #period-select { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:12px; }
+  #search { width:100%; padding:6px 8px; border:1px solid var(--wood-line); border-radius:6px; background:var(--wood-mid); color:var(--cream); font-size:13px; }
+  #search::placeholder { color:var(--cream-soft); opacity:0.6; }
+  #period-select { width:100%; padding:6px 8px; border:1px solid var(--wood-line); border-radius:6px; background:var(--wood-mid); color:var(--cream); font-size:12px; }
   .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.45; background:var(--paper); transition:opacity .15s; }
-  .filter-chip:has(input:checked) { opacity:1; font-weight:600; border-width:1.5px; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
+  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--wood-line); font-size:12px; cursor:pointer; opacity:0.55; background:var(--wood-mid); color:var(--cream-soft); transition:opacity .15s; }
+  .filter-chip:has(input:checked) { opacity:1; font-weight:600; border-width:1.5px; border-color:var(--chip-fg, var(--cream)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
   .filter-chip input { position:absolute; opacity:0; width:0; height:0; }
   .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
   .filter-chip.period-chip { opacity:0.4; }
-  .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
+  .filter-chip.period-chip.active { opacity:1; border-color:var(--cream); background:var(--wood-line); }
   .node.node-flow { position:static; width:200px; }
   .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px 24px; max-width:1500px; }
   .singles-grid.show { display:flex; }
@@ -536,8 +540,8 @@ function renderStatic() {
     <span>시작 전 <b>${active.filter(n => n.status === "시작 전").length}</b></span>
   `;
   document.getElementById("current-row").innerHTML = `
-    <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
-    ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
+    <span style="font-size:12px;color:var(--cream-soft)">요즘 목표:</span>
+    ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--cream-soft)">없음</span>'}
     <div id="right-controls">
       <button class="ctrl-btn${STATUS_COLOR_MODE ? " active" : ""}" id="statuscolor-btn">상태별 색칠</button>
       <button class="ctrl-btn" id="mode-btn"></button>
