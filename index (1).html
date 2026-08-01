@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인생 로드맵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#faf6ea; --paper-raised:#f0e6cd; --paper-hover:#e8d9b0;
+    --chrome:#e3d1ab; --chrome-hover:#d8c294;
+    --ink:#2b2018; --ink-soft:#7d6c53; --line:#d3bd94;
+    --accent:#a8672a; --warn:#a13a2a;
+    --pred-color:#35607e; --succ-color:#a8672a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:"Inter",system-ui,sans-serif; overflow:hidden; }
+  body { position:relative; }
+  body::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1000;
+    opacity:0.5; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; color:var(--ink); }
+  a { color: inherit; }
+  body { display:flex; flex-direction:column; }
+  #topbar { flex-shrink:0; background:var(--chrome); border-bottom:1px solid var(--line); }
+  header { padding:14px 24px 12px; }
+  .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
+  .summary b { color:var(--ink); font-weight:500; }
+  .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .goal-chip { font-size:12px; border:1px solid #a8672a; color:#7a4d1e; background:#f5e6ce; border-radius:999px; padding:4px 10px; cursor:pointer; }
+  .goal-chip:hover { background:#eed6ac; }
+  .ctrl-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; }
+  .ctrl-btn:hover { background:var(--paper-hover); }
+  .ctrl-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+  .ctrl-btn.primary-ctrl { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .ctrl-btn.primary-ctrl:hover { background:var(--accent); color:#fff; }
+  #right-controls { display:flex; gap:6px; margin-left:auto; }
+  .layout { display:flex; flex:1; min-height:0; }
+  aside { width:190px; flex-shrink:0; background:var(--chrome); border-right:1px solid var(--line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
+  .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
+  .section { margin-bottom:18px; }
+  #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
+  #period-select { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:12px; }
+  .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .filter-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; opacity:0.45; background:var(--paper); transition:opacity .15s; }
+  .filter-chip:has(input:checked) { opacity:1; font-weight:600; border-width:1.5px; border-color:var(--chip-fg, var(--ink)); background:var(--chip-bg, var(--paper-raised)); color:var(--chip-fg, var(--ink)); }
+  .filter-chip input { position:absolute; opacity:0; width:0; height:0; }
+  .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
+  .filter-chip.period-chip { opacity:0.4; }
+  .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
+  .node.node-flow { position:static; width:200px; }
+  .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px 24px; max-width:1500px; }
+  .singles-grid.show { display:flex; }
+  .singles-header { width:100%; font-size:12px; color:var(--ink-soft); margin-bottom:2px; }
+  .main { flex:1; min-width:0; height:100%; display:flex; flex-direction:column; min-height:0; background:var(--paper); }
+  .lane-labels-wrap { display:flex; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; position:relative; }
+  .lane-labels { width:128px; flex-shrink:0; position:relative; border-right:1px solid var(--line); }
+  .lane-label { position:absolute; width:100%; display:flex; flex-direction:column; justify-content:center; padding:4px 10px; font-size:12px; font-weight:500; }
+  .lane-count { font-size:10px; color:var(--ink-soft); font-weight:400; }
+  .timeline-scroll { flex:1; overflow-x:auto; overflow-y:visible; position:relative; }
+  .tick-row { position:sticky; top:0; height:26px; background:var(--paper); border-bottom:1px solid var(--line); z-index:2; }
+  .tick { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); transform:translateX(2px); }
+  .today-label { position:absolute; top:5px; font-size:11px; color:var(--warn); font-weight:500; transform:translateX(4px); }
+  .tbd-label { position:absolute; top:5px; font-size:11px; color:var(--ink-soft); }
+  .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
+  .canvas { position:relative; }
+  .lane-bg { position:absolute; left:0; right:0; }
+  .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:none; border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; box-shadow:0 0 6px 0px var(--glow-color, var(--line)), 0 0 14px 0px var(--glow-color, var(--line)); transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
+  .node:hover { filter:brightness(0.98); }
+  .node.overdue { box-shadow:0 0 8px 0px var(--warn), 0 0 16px 0px rgba(161,58,42,0.6); }
+  .ready-badge {
+    position:absolute; top:-8px; right:-8px; width:16px; height:16px; border-radius:999px;
+    background:linear-gradient(135deg,#fdecb0,#c9840f); display:flex; align-items:center; justify-content:center;
+    font-size:8.5px; box-shadow:0 2px 6px rgba(201,132,15,0.55); z-index:6;
+    animation:readyBadgePulse 2.2s ease-in-out infinite;
+  }
+  @keyframes readyBadgePulse { 0%,100% { transform:scale(1); box-shadow:0 2px 7px rgba(201,132,15,0.55); } 50% { transform:scale(1.18); box-shadow:0 2px 11px rgba(201,132,15,0.8); } }
+  .ready-hint { color:#a8690c; font-weight:600; }
+  .node.selected { box-shadow:0 0 0 1.5px var(--ink), 0 6px 16px rgba(0,0,0,0.12); }
+  .node.pred-highlight { box-shadow:0 0 0 1.5px var(--pred-color), 0 3px 10px rgba(47,111,168,0.18); }
+  .node.succ-highlight { box-shadow:0 0 0 1.5px var(--succ-color), 0 3px 10px rgba(189,106,30,0.18); }
+  .node.dimmed { opacity:0.32; filter:saturate(0.6); }
+  .edge-pred-highlight { stroke:var(--pred-color) !important; stroke-width:2.2; opacity:1 !important; }
+  .edge-succ-highlight { stroke:var(--succ-color) !important; stroke-width:2.2; opacity:1 !important; }
+  .edge-dimmed { opacity:0.15 !important; }
+  .status-chip { display:inline-flex; align-items:center; justify-content:center; line-height:0; border-radius:999px; width:20px; height:20px; flex-shrink:0; border:1px solid transparent; }
+  .status-chip svg { display:block; }
+  .status-chip.overdue-tag { background:#f5e0da; color:var(--warn); border-color:var(--warn); font-size:10px; width:auto; padding:0 7px; border-radius:999px; }
+  .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+  .node-meta-line { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-soft); cursor:text; border-radius:4px; padding:2px 2px; margin:-2px -2px; }
+  .node-meta-line:hover { background:rgba(0,0,0,0.045); }
+  .node-meta-line:empty { padding:0; margin:0; min-height:0; }
+  .meta-date { font-size:11px; font-weight:600; color:var(--ink-soft); opacity:0.78; letter-spacing:0.2px; }
+  .meta-note { font-size:11px; font-weight:500; color:var(--ink-soft); opacity:0.78; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.35; padding-top:4px; border-top:1px dashed var(--line); }
+  .meta-note.no-divider { border-top:none; padding-top:0; }
+  .meta-placeholder { opacity:0.55; font-style:italic; }
+  .node.achieved-card { padding:6px 9px; gap:4px; }
+  .node.achieved-card .node-title { font-size:11.5px; opacity:0.68; -webkit-line-clamp:8; }
+  .node.achieved-card .meta-date, .node.achieved-card .meta-note { font-size:9.5px; opacity:0.52; }
+  .node.progress-glow { box-shadow:0 0 0 1px rgba(154,77,2,0.4), 0 0 14px rgba(255,152,20,0.5); }
+  .node.progress-glow:hover { box-shadow:0 0 0 1px rgba(154,77,2,0.5), 0 0 18px rgba(255,152,20,0.65); }
+  .meta-edit { display:flex; gap:4px; align-items:center; }
+  .meta-edit input[type="date"] { font-size:10.5px; padding:1px 3px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); width:106px; }
+  .meta-edit input[type="text"] { font-size:11px; padding:1px 5px; border:1px solid var(--line); border-radius:4px; background:var(--paper); color:var(--ink); flex:1; min-width:40px; }
+  .node-extra {
+    position:absolute; left:-1px; right:-1px; top:100%; margin-top:5px;
+    background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+    opacity:0; visibility:hidden; transform:translateY(-4px);
+    transition:opacity .15s ease, transform .15s ease, visibility .15s;
+    display:flex; flex-direction:column; gap:7px; z-index:40; pointer-events:auto;
+  }
+  .node:hover .node-extra { opacity:1; visibility:visible; transform:translateY(0); }
+  .node:hover { z-index:30; }
+  .node-cats { display:flex; flex-wrap:wrap; gap:4px; }
+  .node-images { display:flex; gap:4px; }
+  .node-images img { width:100%; height:64px; object-fit:cover; border-radius:5px; flex:1; min-width:0; background:var(--paper-raised); }
+  .cat-tag { font-size:10px; font-weight:600; padding:1px 7px; border-radius:999px; white-space:nowrap; }
+  .extra-status-row { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink); }
+  .status-label-text { font-weight:500; }
+  .extra-rel-section { display:flex; flex-direction:column; gap:5px; border-top:1px solid var(--line); padding-top:6px; }
+  .extra-rel-row { display:flex; flex-direction:column; gap:4px; }
+  .extra-rel-btn { align-self:flex-start; font-size:11px; border:1px dashed var(--line); background:var(--paper-raised); color:var(--ink-soft); border-radius:6px; padding:3px 8px; cursor:pointer; }
+  .extra-rel-btn:hover { background:var(--paper-hover); color:var(--ink); }
+  .extra-rel-search-wrap { display:flex; gap:4px; align-items:center; }
+  .extra-rel-search { flex:1; font-size:11px; padding:3px 6px; border:1px solid var(--line); border-radius:5px; background:var(--paper); color:var(--ink); }
+  .extra-rel-close { flex-shrink:0; border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:12px; padding:2px 4px; }
+  .extra-rel-results { max-height:110px; overflow-y:auto; display:flex; flex-direction:column; }
+  .extra-rel-result { font-size:11.5px; padding:4px 6px; border-radius:5px; cursor:pointer; text-align:left; }
+  .extra-rel-result:hover { background:var(--paper-hover); }
+  .extra-rel-empty { font-size:11px; color:var(--ink-soft); padding:4px 6px; font-style:italic; }
+  .hidden { display:none !important; }
+  details { margin:20px 24px; }
+  summary { cursor:pointer; font-size:13px; color:var(--ink-soft); padding:8px 0; }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0 20px; }
+  .pill { font-size:11px; border:1px solid; border-radius:999px; padding:4px 10px; background:var(--paper-raised); cursor:pointer; }
+  .pill-date { opacity:0.6; margin-left:4px; }
+  #loading, #error { padding:60px 24px; text-align:center; color:var(--ink-soft); }
+  #error { color:var(--warn); }
+  .overlay { position:fixed; inset:0; background:rgba(20,20,18,0.4); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal { width:460px; max-width:92vw; max-height:88vh; overflow-y:auto; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.14); }
+  .modal-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .modal h2 { font-size:17px; margin:0 0 4px; }
+  .modal .meta { font-size:12px; color:var(--ink-soft); margin-bottom:14px; }
+  .nav-row { display:flex; gap:6px; flex-shrink:0; }
+  .nav-row button { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); border-radius:6px; padding:4px 8px; cursor:pointer; }
+  .nav-row button:disabled { opacity:0.35; cursor:default; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:11px; color:var(--ink-soft); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px; }
+  .field select, .field input, .field textarea {
+    width:100%; padding:8px; border:1px solid var(--line); border-radius:6px;
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:13px;
+  }
+  .field textarea { min-height:70px; resize:vertical; }
+  .rel-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .rel-chip { display:inline-flex; align-items:center; gap:5px; font-size:12px; background:var(--paper-raised); border:1px solid var(--line); border-radius:999px; padding:3px 6px 3px 10px; }
+  .rel-chip button { border:none; background:none; cursor:pointer; color:var(--ink-soft); font-size:13px; line-height:1; padding:2px; }
+  .rel-add { display:flex; gap:6px; }
+  .rel-add select { flex:1; }
+  .rel-add button { flex-shrink:0; }
+  .modal-actions { display:flex; gap:8px; justify-content:space-between; margin-top:16px; align-items:center; }
+  .modal-actions-right { display:flex; gap:8px; }
+  .btn { font-size:13px; padding:8px 14px; border-radius:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.danger { background:#f5e0da; border-color:#dba593; color:var(--warn); }
+  .btn:hover { background:var(--paper-hover); }
+  .btn.primary:hover { background:#8a5320; }
+  .btn.danger:hover { background:#eecabb; }
+  .modal-msg { font-size:12px; margin-top:8px; min-height:16px; }
+  .modal-msg.ok { color:#0f8f6c; }
+  .modal-msg.err { color:var(--warn); }
+  .open-link { font-size:12px; color:#1c6fb0; text-decoration:none; }
+  .content-box { border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; background:var(--paper-raised); max-height:220px; overflow-y:auto; }
+  .content-box p { margin:0 0 8px; }
+  .content-box h3, .content-box h4, .content-box h5 { margin:10px 0 4px; font-family:inherit; }
+  .content-box li { margin:2px 0; }
+  .content-box hr { border:none; border-top:1px solid var(--line); margin:8px 0; }
+  .content-box blockquote { margin:6px 0; padding-left:10px; border-left:2px solid var(--line); color:var(--ink-soft); }
+  .content-box code { background:var(--paper-hover); padding:1px 4px; border-radius:4px; font-family:monospace; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <header>
+    <h1>인생 로드맵</h1>
+    <div class="summary" id="summary"></div>
+    <div class="current-row" id="current-row"></div>
+  </header>
+</div>
+<div id="loading">불러오는 중이에요…</div>
+<div id="error" class="hidden"></div>
+<div class="layout hidden" id="app">
+  <aside>
+    <div class="section">
+      <div class="section-title">검색</div>
+      <input id="search" placeholder="목표 이름 검색">
+    </div>
+    <div class="section">
+      <div class="section-title">상태</div>
+      <div class="filter-chips" id="status-filters"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">시기</div>
+      <select id="period-select"></select>
+    </div>
+    <div class="section">
+      <div class="section-title">카테고리</div>
+      <div class="filter-chips" id="category-filters"></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="lane-labels-wrap">
+      <div class="lane-labels" id="lane-labels"></div>
+      <div class="timeline-scroll" id="timeline-scroll">
+        <div class="tick-row" id="tick-row"></div>
+        <div class="canvas" id="canvas"></div>
+        <div class="singles-grid" id="singles-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const NODE_W = 190, NODE_H = 66, ROW_GAP = 10, LANE_PAD = 14, CANVAS_TOP_GAP = 16;
+const PX_PER_MONTH = 30, TIMELINE_START = 160, SEQ_STEP = NODE_W + 40;
+const YEAR_SUBCOL_GAP = 14, YEAR_COL_PAD = 16;
+const YEAR_COL_W = NODE_W * 2 + YEAR_SUBCOL_GAP + YEAR_COL_PAD * 2;
+const ARROW_END_GAP = 6;
+
+function hexToRgba(hex, alpha) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map(c => c + c).join("") : h;
+  const num = parseInt(full, 16);
+  const r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function shrinkPoint(x1, y1, x2, y2, gap) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const dist = Math.hypot(dx, dy) || 1;
+  const t = Math.max(0, (dist - gap) / dist);
+  return { x: x1 + dx * t, y: y1 + dy * t };
+}
+function shrinkLastWaypoint(points, gap) {
+  if (!points || points.length < 2) return points;
+  const p1 = points[points.length - 2], p2 = points[points.length - 1];
+  const adj = shrinkPoint(p1.x, p1.y, p2.x, p2.y, gap);
+  return [...points.slice(0, -1), adj];
+}
+
+const STATUS_META = {
+  "시작 전": { label: "시작 전", fg: "#6b4423", bg: "#e6d3b8" },
+  "진행 중": { label: "진행 중", fg: "#9a4d02", bg: "#ffb628" },
+  "달성": { label: "달성", fg: "#3a3a3a", bg: "#dcdcdc" },
+};
+
+const STATUS_ICONS = {
+  "시작 전": '<svg viewBox="0 0 16 16" width="10" height="10"><rect x="2.5" y="2.5" width="11" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',
+  "진행 중": '<svg viewBox="0 0 16 16" width="10" height="10"><path d="M4 2.5 L13 8 L4 13.5 Z" fill="currentColor"/></svg>',
+  "달성": '<svg viewBox="0 0 16 16" width="10" height="10"><path d="M3 8.3 L6.3 11.6 L13 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+const CATEGORY_ORDER = [
+  "💪🏻 건강/피트니스", "🍀 정신/마음", "🩵 사랑/관계/가족", "🏠 라이프 스타일",
+  "🪙 자산관리", "💼 일/커리어", "✍🏻 예술/창작", "✈️ 여행/모험", "__NONE__",
+];
+
+const CATEGORY_META = {
+  "💪🏻 건강/피트니스": { fg: "#2f6b4a", bg: "#e2ede3", bg2: "#c0dac6", bgFaint: "#eef3ee", label: "건강/피트니스", emoji: "🏃" },
+  "🍀 정신/마음": { fg: "#726b2c", bg: "#efeddc", bg2: "#dcd6ae", bgFaint: "#f4f2e7", label: "정신/마음", emoji: "🧘" },
+  "🩵 사랑/관계/가족": { fg: "#8a3350", bg: "#f3e3e8", bg2: "#e4c1cd", bgFaint: "#f6eef1", label: "사랑/관계/가족", emoji: "💛" },
+  "🏠 라이프 스타일": { fg: "#7a5230", bg: "#f0e2ce", bg2: "#ddc298", bgFaint: "#f4ece0", label: "라이프 스타일", emoji: "🏠" },
+  "🪙 자산관리": { fg: "#8a6a12", bg: "#f5ecc9", bg2: "#ecd68f", bgFaint: "#f7f0dc", label: "자산관리", emoji: "💰" },
+  "💼 일/커리어": { fg: "#2d4f70", bg: "#e1e8ef", bg2: "#bfd0e0", bgFaint: "#eef1f5", label: "일/커리어", emoji: "💼" },
+  "✍🏻 예술/창작": { fg: "#5c3f7a", bg: "#eae1f0", bg2: "#cfbce1", bgFaint: "#f1ecf4", label: "예술/창작", emoji: "🎨" },
+  "✈️ 여행/모험": { fg: "#a1502c", bg: "#f3e1d6", bg2: "#e6c0aa", bgFaint: "#f6ece4", label: "여행/모험", emoji: "✈️" },
+  "__NONE__": { fg: "#4a4038", bg: "#eae3d7", bg2: "#d5c8b6", bgFaint: "#f1ece2", label: "기타", emoji: "⭐" },
+};
+
+function esc(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function monthsIndex(dateStr) {
+  if (!dateStr) return null;
+  const [y, m] = dateStr.split("-").map(Number);
+  return y * 12 + (m - 1);
+}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+let GRAPH = null;
+let VIEW_MODE = "sequence";
+let ACTIVE_PERIOD = null;
+let STATUS_COLOR_MODE = true;
+let FULL_ORDER = [];
+let WORKER_URL = localStorage.getItem("roadmap_worker_url") || "";
+
+function periodKey(dateStr) {
+  if (!dateStr) return "TBD";
+  const [y, m] = dateStr.split("-").map(Number);
+  return `${y}-H${m <= 6 ? 1 : 2}`;
+}
+function periodLabel(key) {
+  if (key === "TBD") return "날짜 미정";
+  const [y, h] = key.split("-H");
+  return `${y} ${h === "1" ? "상반기" : "하반기"}`;
+}
+function computePeriods() {
+  const counts = new Map();
+  for (const n of GRAPH.nodes) {
+    const key = periodKey(n.targetDate);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const keys = Array.from(counts.keys()).filter(k => k !== "TBD");
+  keys.sort();
+  if (counts.has("TBD")) keys.push("TBD");
+  return keys;
+}
+
+function ensureWorkerUrl() {
+  if (WORKER_URL) return true;
+  const input = prompt("Cloudflare Worker URL을 붙여넣어 주세요 (예: https://life-roadmap-api.xxx.workers.dev)");
+  if (!input) return false;
+  WORKER_URL = input.replace(/\/$/, "");
+  localStorage.setItem("roadmap_worker_url", WORKER_URL);
+  return true;
+}
+
+function openWorkerSettings() {
+  const input = prompt("Worker URL", WORKER_URL);
+  if (input === null) return;
+  WORKER_URL = input.replace(/\/$/, "");
+  localStorage.setItem("roadmap_worker_url", WORKER_URL);
+  load();
+}
+document.querySelector("h1").addEventListener("dblclick", openWorkerSettings);
+document.getElementById("settings-btn")?.addEventListener("click", openWorkerSettings);
+
+async function load() {
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("error").classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
+
+  if (!ensureWorkerUrl()) {
+    document.getElementById("loading").classList.add("hidden");
+    document.getElementById("error").textContent = "Worker URL이 필요해요. 상단의 'Worker 설정' 버튼을 눌러 입력해주세요.";
+    document.getElementById("error").classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL + "/goals");
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    GRAPH = data;
+    renderStatic();
+    rerenderCanvas();
+    document.getElementById("loading").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+  } catch (err) {
+    document.getElementById("loading").classList.add("hidden");
+    document.getElementById("error").textContent = "불러오지 못했어요: " + err.message;
+    document.getElementById("error").classList.remove("hidden");
+  }
+}
+
+function yearOf(dateStr) {
+  if (!dateStr) return null;
+  return parseInt(dateStr.slice(0, 4), 10);
+}
+
+function buildLayout(nodes) {
+  const dated = nodes.filter(n => n.targetDate);
+  const years = Array.from(new Set(dated.map(n => yearOf(n.targetDate)))).sort((a, b) => a - b);
+  const hasTBD = nodes.some(n => !n.targetDate);
+  const colKeys = [...years, ...(hasTBD ? ["TBD"] : [])];
+  if (colKeys.length === 0) colKeys.push(new Date().getFullYear());
+
+  const colIndex = new Map(colKeys.map((k, i) => [k, i]));
+  const colX = (key) => TIMELINE_START + colIndex.get(key) * YEAR_COL_W;
+  const subX = (key, subcol) => colX(key) + YEAR_COL_PAD + subcol * (NODE_W + YEAR_SUBCOL_GAP);
+
+  const todayYear = new Date().getFullYear();
+  const todayX = colIndex.has(todayYear) ? colX(todayYear) + YEAR_COL_W / 2 : null;
+  const tbdX = hasTBD ? colX("TBD") + YEAR_COL_W / 2 : null;
+
+  const byLane = new Map(CATEGORY_ORDER.map(c => [c, []]));
+  for (const n of nodes) {
+    const primary = n.categories[0] ?? "__NONE__";
+    const lane = byLane.has(primary) ? primary : "__NONE__";
+    byLane.get(lane).push(n);
+  }
+
+  const lanes = [];
+  let cursorY = CANVAS_TOP_GAP;
+  for (const cat of CATEGORY_ORDER) {
+    const laneNodes = byLane.get(cat);
+    if (!laneNodes.length) continue;
+    const byCol = new Map();
+    for (const n of laneNodes) {
+      const key = n.targetDate ? yearOf(n.targetDate) : "TBD";
+      if (!byCol.has(key)) byCol.set(key, []);
+      byCol.get(key).push(n);
+    }
+    for (const arr of byCol.values()) {
+      arr.sort((a, b) => (a.targetDate ?? "").localeCompare(b.targetDate ?? "") || a.title.localeCompare(b.title, "ko"));
+    }
+    let maxRows = 1;
+    const placed = [];
+    for (const [key, arr] of byCol) {
+      arr.forEach((n, idx) => {
+        const subcol = idx % 2, subrow = Math.floor(idx / 2);
+        maxRows = Math.max(maxRows, subrow + 1);
+        const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
+        placed.push({ ...n, x: subX(key, subcol), subrow, overdue });
+      });
+    }
+    const laneHeight = maxRows * (NODE_H + ROW_GAP) + LANE_PAD * 2;
+    for (const p of placed) p.y = cursorY + LANE_PAD + p.subrow * (NODE_H + ROW_GAP);
+    lanes.push({ cat, y: cursorY, height: laneHeight, nodes: placed });
+    cursorY += laneHeight + 4;
+  }
+
+  const totalWidth = colKeys.length * YEAR_COL_W + TIMELINE_START + 40;
+  const colTicks = colKeys.map(key => ({
+    x: colX(key) + YEAR_COL_W / 2,
+    left: colX(key),
+    label: key === "TBD" ? "날짜 미정" : `${key}년`,
+    isTBD: key === "TBD",
+  }));
+
+  return { lanes, totalWidth, totalHeight: cursorY + 20, todayX, tbdX, colTicks };
+}
+
+function edgePathD(x1, y1, x2, y2) {
+  const dx = Math.max(Math.abs(x2 - x1) / 2, 40);
+  return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+}
+
+function multiEdgePath(points) {
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const { x: x1, y: y1 } = points[i];
+    const { x: x2, y: y2 } = points[i + 1];
+    const dx = x2 - x1, dy = y2 - y1;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const off = Math.max(Math.abs(dx) / 2, 30) * Math.sign(dx || 1);
+      d += ` C ${x1 + off} ${y1}, ${x2 - off} ${y2}, ${x2} ${y2}`;
+    } else {
+      const off = Math.max(Math.abs(dy) / 2, 30) * Math.sign(dy || 1);
+      d += ` C ${x1} ${y1 + off}, ${x2} ${y2 - off}, ${x2} ${y2}`;
+    }
+  }
+  return d;
+}
+
+function sideNormal(side) {
+  if (side === "right") return { x: 1, y: 0 };
+  if (side === "left") return { x: -1, y: 0 };
+  if (side === "top") return { x: 0, y: -1 };
+  return { x: 0, y: 1 }; // bottom
+}
+
+// Draws one bezier segment. When startSide/endSide are given, the curve's
+// tangent at that endpoint is forced perpendicular to that card face
+// (i.e. it leaves/arrives straight-on rather than at an angle).
+function bezierSegment(p1, p2, startSide, endSide) {
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const magX = Math.max(Math.abs(dx) / 2, 30), magY = Math.max(Math.abs(dy) / 2, 30);
+  let c1, c2;
+  if (startSide) {
+    const n = sideNormal(startSide);
+    const mag = (startSide === "left" || startSide === "right") ? magX : magY;
+    c1 = { x: p1.x + n.x * mag, y: p1.y + n.y * mag };
+  } else if (Math.abs(dx) >= Math.abs(dy)) {
+    c1 = { x: p1.x + magX * Math.sign(dx || 1), y: p1.y };
+  } else {
+    c1 = { x: p1.x, y: p1.y + magY * Math.sign(dy || 1) };
+  }
+  if (endSide) {
+    const n = sideNormal(endSide);
+    const mag = (endSide === "left" || endSide === "right") ? magX : magY;
+    c2 = { x: p2.x + n.x * mag, y: p2.y + n.y * mag };
+  } else if (Math.abs(dx) >= Math.abs(dy)) {
+    c2 = { x: p2.x - magX * Math.sign(dx || 1), y: p2.y };
+  } else {
+    c2 = { x: p2.x, y: p2.y - magY * Math.sign(dy || 1) };
+  }
+  return `C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${p2.x} ${p2.y}`;
+}
+
+function multiEdgePathWithSides(points, startSide, endSide) {
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const isFirst = i === 0, isLast = i === points.length - 2;
+    d += " " + bezierSegment(points[i], points[i + 1], isFirst ? startSide : null, isLast ? endSide : null);
+  }
+  return d;
+}
+
+function getFilterState() {
+  const search = document.getElementById("search");
+  const statusCbs = Array.from(document.querySelectorAll(".status-cb"));
+  const catCbs = Array.from(document.querySelectorAll(".cat-cb"));
+  return {
+    q: search ? search.value.trim().toLowerCase() : "",
+    statuses: new Set(statusCbs.filter(c => c.checked).map(c => c.value)),
+    categories: new Set(catCbs.filter(c => c.checked).map(c => c.value)),
+  };
+}
+
+function passesFilter(n, f) {
+  const cats = n.categories.length ? n.categories : ["__NONE__"];
+  const catOk = cats.some(c => f.categories.has(c));
+  const statusOk = f.statuses.has(n.status);
+  const searchOk = !f.q || n.title.toLowerCase().includes(f.q);
+  const periodOk = !ACTIVE_PERIOD || periodKey(n.targetDate) === ACTIVE_PERIOD;
+  return catOk && statusOk && searchOk && periodOk;
+}
+
+function renderStatic() {
+  const nodes = GRAPH.nodes;
+  const achieved = nodes.filter(n => n.status === "달성").sort((a, b) => (b.targetDate ?? "").localeCompare(a.targetDate ?? ""));
+  const active = nodes.filter(n => n.status !== "달성");
+  const currentGoals = nodes.filter(n => n.current);
+
+  document.getElementById("summary").innerHTML = `
+    <span>전체 <b>${nodes.length}개</b></span>
+    <span>달성 <b>${achieved.length}</b></span>
+    <span>진행 중 <b>${active.filter(n => n.status === "진행 중").length}</b></span>
+    <span>시작 전 <b>${active.filter(n => n.status === "시작 전").length}</b></span>
+  `;
+  document.getElementById("current-row").innerHTML = `
+    <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
+    ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
+    <div id="right-controls">
+      <button class="ctrl-btn primary-ctrl" id="new-goal-btn">+ 새 목표</button>
+      <button class="ctrl-btn${STATUS_COLOR_MODE ? " active" : ""}" id="statuscolor-btn">상태별 색칠</button>
+      <button class="ctrl-btn" id="mode-btn"></button>
+      <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
+    </div>
+  `;
+
+  const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
+  document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
+    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" checked><span class="status-chip" style="background:${meta.bg};color:${meta.fg}">${STATUS_ICONS[key]}</span> ${meta.label}</label>`
+  ).join("");
+  document.getElementById("category-filters").innerHTML = presentCats.map((c) => {
+    const meta = CATEGORY_META[c];
+    return `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="cat-cb" value="${esc(c)}" checked>${meta.emoji} ${esc(meta.label)}</label>`;
+  }).join("");
+
+  const periods = computePeriods();
+  document.getElementById("period-select").innerHTML =
+    `<option value="">전체</option>` +
+    periods.map(p => `<option value="${esc(p)}">${esc(periodLabel(p))}</option>`).join("");
+  document.getElementById("period-select").addEventListener("change", (e) => {
+    ACTIVE_PERIOD = e.target.value || null;
+    rerenderCanvas();
+  });
+
+  document.querySelectorAll(".status-cb, .cat-cb").forEach(cb => cb.addEventListener("change", () => rerenderCanvas()));
+  document.getElementById("search").addEventListener("input", () => rerenderCanvas());
+  document.getElementById("mode-btn").addEventListener("click", () => {
+    VIEW_MODE = VIEW_MODE === "time" ? "sequence" : "time";
+    rerenderCanvas();
+  });
+  document.getElementById("statuscolor-btn").addEventListener("click", (e) => {
+    STATUS_COLOR_MODE = !STATUS_COLOR_MODE;
+    e.target.classList.toggle("active", STATUS_COLOR_MODE);
+    rerenderCanvas();
+  });
+  document.getElementById("new-goal-btn").addEventListener("click", openCreateModal);
+
+  document.querySelectorAll("[data-goto]").forEach(btn => btn.addEventListener("click", () => goTo(btn.dataset.goto)));
+}
+
+function rerenderCanvas() {
+  const f = getFilterState();
+  const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
+
+  const modeBtn = document.getElementById("mode-btn");
+  if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "연도별 보기";
+
+  const laneLabelsEl = document.getElementById("lane-labels");
+  const singlesEl = document.getElementById("singles-grid");
+
+  if (VIEW_MODE === "sequence") {
+    laneLabelsEl.style.display = "none";
+    renderSequenceMode(filtered);
+  } else {
+    laneLabelsEl.style.display = "";
+    singlesEl.classList.remove("show");
+    singlesEl.innerHTML = "";
+    renderTimeMode(filtered);
+  }
+}
+
+function renderTimeMode(filtered) {
+  const layout = buildLayout(filtered);
+  const nodeById = new Map();
+  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
+  FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
+
+  document.getElementById("lane-labels").style.height = layout.totalHeight + "px";
+  document.getElementById("lane-labels").innerHTML = layout.lanes.map((lane) => {
+    const meta = CATEGORY_META[lane.cat];
+    return `<div class="lane-label" style="top:${lane.y}px;height:${lane.height}px;border-left:3px solid ${meta.fg}">
+      <span style="color:${meta.fg}">${meta.emoji} ${esc(meta.label)}</span>
+      <span class="lane-count">${lane.nodes.length}</span>
+    </div>`;
+  }).join("");
+
+  const tickRow = document.getElementById("tick-row");
+  tickRow.style.width = layout.totalWidth + "px";
+  tickRow.style.height = "26px";
+  tickRow.style.borderBottom = "1px solid var(--line)";
+  tickRow.innerHTML =
+    layout.colTicks.map(t => `<div class="${t.isTBD ? "tbd-label" : "tick"}" style="left:${t.x}px;transform:translateX(-50%);">${esc(t.label)}</div>`).join("") +
+    (layout.todayX != null ? `<div class="today-label" style="left:${layout.todayX}px;transform:translateX(-50%);">오늘</div>` : "");
+
+  const laneBg = layout.lanes.map((lane) => {
+    const meta = CATEGORY_META[lane.cat];
+    return `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;background:${meta.bgFaint};"></div>`;
+  }).join("");
+  const tickLines = layout.colTicks.slice(1).map(t => `<line x1="${t.left}" y1="0" x2="${t.left}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1"/>`).join("");
+  const todayLine = layout.todayX != null ? `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#a13a2a" stroke-width="1.5" stroke-dasharray="3 3"/>` : "";
+
+  const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
+    const s = nodeById.get(e.source), t = nodeById.get(e.target);
+    const x1 = s.x + NODE_W, y1 = s.y + NODE_H / 2;
+    const end = shrinkPoint(x1, y1, t.x, t.y + NODE_H / 2, ARROW_END_GAP);
+    const d = edgePathD(x1, y1, end.x, end.y);
+    const dashed = e.kind === "related" ? 'stroke-dasharray="4 4"' : "";
+    const marker = e.kind === "sequence" ? 'marker-end="url(#arrowhead)"' : "";
+    return `<path d="${d}" fill="none" stroke="#b3a07c" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+  }).join("");
+
+  const nodeDivs = layout.lanes.flatMap(l => l.nodes).map(n => renderNodeDiv(n, NODE_W, NODE_H)).join("");
+
+  document.getElementById("canvas").style.width = layout.totalWidth + "px";
+  document.getElementById("canvas").style.height = layout.totalHeight + "px";
+  document.getElementById("canvas").innerHTML = `
+    ${laneBg}
+    <svg width="${layout.totalWidth}" height="${layout.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
+      <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#b3a07c" stroke-width="1.5"/>
+      </marker></defs>
+      ${tickLines}${todayLine}${edgePaths}
+    </svg>
+    ${nodeDivs}
+  `;
+
+  wireCanvasInteractions();
+}
+
+function renderNodeDiv(n, w, h) {
+  const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
+  const meta = STATUS_META[n.status];
+  const emoji = n.icon || cat.emoji;
+  const cardBg = STATUS_COLOR_MODE ? hexToRgba(meta.bg, 0.8) : "rgba(244,236,220,0.65)";
+  const cardBorder = STATUS_COLOR_MODE ? meta.fg + "99" : "var(--line)";
+  const readyToStart = n.status === "시작 전" && (!n.predecessors || n.predecessors.length === 0);
+  const catsHtml = n.categories.length
+    ? `<div class="node-cats">${n.categories.map((c) => {
+        const m = CATEGORY_META[c] || CATEGORY_META.__NONE__;
+        return `<span class="cat-tag" style="color:${m.fg};background:${m.bg}">${m.emoji} ${esc(m.label)}</span>`;
+      }).join("")}</div>`
+    : "";
+  const metaText = metaLineDisplayHtml(n.targetDate, n.note, n.status);
+  const achievedClass = n.status === "달성" ? "achieved-card" : "";
+  const progressClass = n.status === "진행 중" ? "progress-glow" : "";
+  const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
+  const sizeStyle = (w != null ? `width:${w}px;` : "") + (h != null ? `height:${h}px;` : "");
+  const imagesHtml = (Array.isArray(n.images) && n.images.length)
+    ? `<div class="node-images">${n.images.slice(0, 4).map(url => `<img src="${esc(url)}" loading="lazy" alt="">`).join("")}</div>`
+    : "";
+  return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""} ${achievedClass} ${progressClass}" data-id="${esc(n.id)}"
+    style="${posStyle}${sizeStyle}background:${cardBg};--glow-color:${cardBorder};">
+    ${readyToStart ? '<div class="ready-badge" title="선행 목표가 없어요 — 지금 시작해도 좋아요">💡</div>' : ""}
+    <div class="node-title">${emoji} ${esc(n.title)}</div>
+    <div class="node-meta-line" data-id="${esc(n.id)}" data-date="${esc(n.targetDate ?? "")}" data-note="${esc(n.note ?? "")}">${metaText}</div>
+    <div class="node-extra">
+      ${imagesHtml}
+      <div class="extra-status-row">
+        <span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${STATUS_ICONS[n.status]}</span>
+        <span class="status-label-text">${esc(meta.label)}</span>
+        ${n.overdue ? '<span class="status-chip overdue-tag" title="지연됨">⚠ 지연됨</span>' : ""}
+      </div>
+      ${readyToStart ? '<div class="ready-hint">💡 선행 목표가 없어요 — 지금 시작해볼까요?</div>' : ""}
+      ${catsHtml}
+      <div class="extra-rel-section">
+        ${extraRelRowHtml(n.id, "predecessors", "선행목표 추가")}
+        ${extraRelRowHtml(n.id, "successors", "후속목표 추가")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function extraRelRowHtml(nodeId, relType, label) {
+  return `<div class="extra-rel-row" data-rel-type="${relType}" data-node="${esc(nodeId)}">
+    <button type="button" class="extra-rel-btn" data-rel-type="${relType}" data-node="${esc(nodeId)}">+ ${esc(label)}</button>
+  </div>`;
+}
+
+const CHAIN_COL_W = 300, CHAIN_ROW_GAP = 16;
+
+function buildChainView(nodes) {
+  const idSet = new Set(nodes.map(n => n.id));
+  const seqEdges = GRAPH.edges.filter(e => e.kind === "sequence" && idSet.has(e.source) && idSet.has(e.target));
+  const degree = new Map(nodes.map(n => [n.id, 0]));
+  const succMap = new Map(nodes.map(n => [n.id, []]));
+  const predMap = new Map(nodes.map(n => [n.id, []]));
+  const adj = new Map(nodes.map(n => [n.id, new Set()]));
+  for (const e of seqEdges) {
+    succMap.get(e.source).push(e.target);
+    predMap.get(e.target).push(e.source);
+    adj.get(e.source).add(e.target);
+    adj.get(e.target).add(e.source);
+    degree.set(e.source, degree.get(e.source) + 1);
+    degree.set(e.target, degree.get(e.target) + 1);
+  }
+
+  const visited = new Set();
+  const components = [];
+  for (const n of nodes) {
+    if (visited.has(n.id)) continue;
+    const comp = [];
+    const stack = [n.id];
+    visited.add(n.id);
+    while (stack.length) {
+      const cur = stack.pop();
+      comp.push(cur);
+      for (const nb of adj.get(cur)) if (!visited.has(nb)) { visited.add(nb); stack.push(nb); }
+    }
+    components.push(comp);
+  }
+
+  const chains = components.filter(c => c.length > 1).sort((a, b) => b.length - a.length);
+  const singleIds = new Set(components.filter(c => c.length === 1).flat());
+  const byId = new Map(nodes.map(n => [n.id, n]));
+
+  function sizeFor(id) {
+    const d = degree.get(id) || 0;
+    const w = Math.min(NODE_W + d * 10, 270);
+    const title = byId.get(id)?.title || "";
+    const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
+    const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
+    const h = Math.min(Math.max(NODE_H, 46 + lines * 19 + 16), 190);
+    return { w, h };
+  }
+
+  function titleOf(id) { return byId.has(id) ? byId.get(id).title : id; }
+
+  const placed = [];
+  const edgeWaypoints = new Map();
+  const edgeSides = new Map();
+  let blockY = CANVAS_TOP_GAP;
+  for (const comp of chains) {
+    const compSet = new Set(comp);
+    const indeg = new Map(comp.map(id => [id, predMap.get(id).filter(p => compSet.has(p)).length]));
+    const rank = new Map();
+    const queue = comp.filter(id => indeg.get(id) === 0);
+    queue.forEach(id => rank.set(id, 0));
+    const pushed = new Set(queue);
+    let qi = 0;
+    while (qi < queue.length) {
+      const cur = queue[qi++];
+      for (const nxt of succMap.get(cur)) {
+        if (!compSet.has(nxt)) continue;
+        const newRank = rank.get(cur) + 1;
+        if (!rank.has(nxt) || rank.get(nxt) < newRank) rank.set(nxt, newRank);
+        indeg.set(nxt, indeg.get(nxt) - 1);
+        if (indeg.get(nxt) <= 0 && !pushed.has(nxt)) { pushed.add(nxt); queue.push(nxt); }
+      }
+    }
+    comp.forEach(id => { if (!rank.has(id)) rank.set(id, 0); });
+
+    // Insert dummy waypoint nodes for edges spanning more than one rank, so long
+    // connections reserve their own row slot instead of cutting across other cards.
+    const compEdges = seqEdges.filter(e => compSet.has(e.source) && compSet.has(e.target));
+    const compAll = comp.slice();
+    const dummyRank = new Map();
+    const edgeChainIds = new Map();
+    let dcount = 0;
+    for (const e of compEdges) {
+      const rs = rank.get(e.source), rt = rank.get(e.target);
+      const key = e.source + "->" + e.target;
+      if (rt - rs <= 1) { edgeChainIds.set(key, [e.source, e.target]); continue; }
+      const chain = [e.source];
+      let prev = e.source;
+      for (let r = rs + 1; r < rt; r++) {
+        const dId = `__d${dcount++}_${key}`;
+        rank.set(dId, r);
+        dummyRank.set(dId, r);
+        predMap.set(dId, [prev]);
+        succMap.set(dId, []);
+        succMap.get(prev).push(dId);
+        compAll.push(dId);
+        chain.push(dId);
+        prev = dId;
+      }
+      succMap.get(prev).push(e.target);
+      predMap.get(e.target).push(prev);
+      chain.push(e.target);
+      edgeChainIds.set(key, chain);
+    }
+    const compAllSet = new Set(compAll);
+
+    const byRank = new Map();
+    compAll.forEach(id => {
+      const r = rank.get(id);
+      if (!byRank.has(r)) byRank.set(r, []);
+      byRank.get(r).push(id);
+    });
+    const maxRank = Math.max(...comp.map(id => rank.get(id)));
+
+    const rowOf = new Map();
+    // initial pass: rank 0 by title, then forward using predecessor barycenter
+    for (let r = 0; r <= maxRank; r++) {
+      const idsAtRank = (byRank.get(r) || []).slice();
+      idsAtRank.sort((a, b) => {
+        const pa = predMap.get(a).filter(p => compAllSet.has(p));
+        const pb = predMap.get(b).filter(p => compAllSet.has(p));
+        const avgA = pa.length ? pa.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pa.length : 999;
+        const avgB = pb.length ? pb.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / pb.length : 999;
+        if (avgA !== avgB) return avgA - avgB;
+        return titleOf(a).localeCompare(titleOf(b), "ko");
+      });
+      idsAtRank.forEach((id, i) => rowOf.set(id, i));
+    }
+    // refine with alternating backward/forward barycenter sweeps to reduce crossings
+    const SWEEPS = 6;
+    for (let sweep = 0; sweep < SWEEPS; sweep++) {
+      const backward = sweep % 2 === 0;
+      const ranksToVisit = backward
+        ? Array.from({ length: maxRank }, (_, i) => maxRank - 1 - i)
+        : Array.from({ length: maxRank }, (_, i) => i + 1);
+      for (const r of ranksToVisit) {
+        const idsAtRank = (byRank.get(r) || []).slice();
+        idsAtRank.sort((a, b) => {
+          const neighborsA = (backward ? succMap.get(a) : predMap.get(a)).filter(p => compAllSet.has(p));
+          const neighborsB = (backward ? succMap.get(b) : predMap.get(b)).filter(p => compAllSet.has(p));
+          const curA = rowOf.get(a) ?? 0, curB = rowOf.get(b) ?? 0;
+          const avgA = neighborsA.length ? neighborsA.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsA.length : curA;
+          const avgB = neighborsB.length ? neighborsB.reduce((s, p) => s + (rowOf.get(p) ?? 0), 0) / neighborsB.length : curB;
+          if (avgA !== avgB) return avgA - avgB;
+          return curA - curB;
+        });
+        idsAtRank.forEach((id, i) => rowOf.set(id, i));
+      }
+    }
+
+    const maxRow = Math.max(...compAll.map(id => rowOf.get(id)));
+    const rowHeight = Math.max(...comp.map(id => sizeFor(id).h)) + CHAIN_ROW_GAP;
+
+    const posOfReal = new Map();
+    comp.forEach((id) => {
+      const { w, h } = sizeFor(id);
+      const x = TIMELINE_START + rank.get(id) * CHAIN_COL_W;
+      const y = blockY + rowOf.get(id) * rowHeight;
+      posOfReal.set(id, { x, y, w, h });
+      placed.push({ ...byId.get(id), x, y, w, h });
+    });
+
+    const dummyPos = new Map();
+    dummyRank.forEach((r, id) => {
+      const x = TIMELINE_START + r * CHAIN_COL_W + NODE_W / 2;
+      const y = blockY + rowOf.get(id) * rowHeight + rowHeight / 2;
+      dummyPos.set(id, { x, y });
+    });
+
+    // Always leave from the vertical center of the right side and arrive at
+    // the vertical center of the left side — no corner-ish anchors, no
+    // per-edge side switching. Simple, predictable, always centered.
+    function rightCenter(box) { return { x: box.x + box.w, y: box.y + box.h / 2 }; }
+    function leftCenter(box) { return { x: box.x, y: box.y + box.h / 2 }; }
+
+    for (const [key, chain] of edgeChainIds) {
+      edgeSides.set(key, { srcSide: "right", tgtSide: "left" });
+    }
+
+    for (const [key, chain] of edgeChainIds) {
+      const srcBox = posOfReal.get(chain[0]);
+      const tgtBox = posOfReal.get(chain[chain.length - 1]);
+      const pts = chain.map((id, idx) => {
+        if (idx === 0) return rightCenter(srcBox);
+        if (idx === chain.length - 1) return leftCenter(tgtBox);
+        return dummyPos.get(id);
+      });
+      edgeWaypoints.set(key, pts);
+    }
+
+    blockY += (maxRow + 1) * rowHeight + 44;
+  }
+
+  const maxX = placed.length ? Math.max(...placed.map(p => p.x + p.w)) : TIMELINE_START;
+  const totalWidth = Math.max(maxX + 60, 900);
+  const totalHeight = Math.max(blockY, 40);
+  const singles = nodes.filter(n => singleIds.has(n.id)).sort((a, b) => a.title.localeCompare(b.title, "ko"));
+
+  return { placed, totalWidth, totalHeight, singles, seqEdges, edgeWaypoints, edgeSides };
+}
+
+function renderSequenceMode(filtered) {
+  const view = buildChainView(filtered);
+  const nodeById = new Map(view.placed.map(n => [n.id, n]));
+  FULL_ORDER = [...view.placed.map(n => n.id), ...view.singles.map(n => n.id)];
+
+  const tickRow = document.getElementById("tick-row");
+  tickRow.style.width = "100%";
+  tickRow.style.height = "0px";
+  tickRow.style.borderBottom = "none";
+  tickRow.innerHTML = "";
+
+  const edgePaths = view.seqEdges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
+    const key = e.source + "->" + e.target;
+    const pts = view.edgeWaypoints.get(key);
+    const sides = view.edgeSides.get(key);
+    const d = pts ? multiEdgePathWithSides(shrinkLastWaypoint(pts, ARROW_END_GAP), sides?.srcSide, sides?.tgtSide) : (() => {
+      const s = nodeById.get(e.source), t = nodeById.get(e.target);
+      const x1 = s.x + s.w, y1 = s.y + s.h / 2;
+      const end = shrinkPoint(x1, y1, t.x, t.y + t.h / 2, ARROW_END_GAP);
+      return edgePathD(x1, y1, end.x, end.y);
+    })();
+    return `<path d="${d}" fill="none" stroke="#96805f" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
+  }).join("");
+
+  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, null)).join("");
+
+  document.getElementById("canvas").style.width = view.totalWidth + "px";
+  document.getElementById("canvas").style.height = view.totalHeight + "px";
+  document.getElementById("canvas").innerHTML = `
+    <svg width="${view.totalWidth}" height="${view.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
+      <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#96805f" stroke-width="1.5"/>
+      </marker></defs>
+      ${edgePaths}
+    </svg>
+    ${nodeDivs}
+  `;
+
+  const singlesEl = document.getElementById("singles-grid");
+  if (view.singles.length) {
+    singlesEl.classList.add("show");
+    singlesEl.innerHTML =
+      `<div class="singles-header">연결된 목표가 없는 항목 ${view.singles.length}개</div>` +
+      view.singles.map(n => renderNodeDiv({ ...n, flow: true }, null, null)).join("");
+  } else {
+    singlesEl.classList.remove("show");
+    singlesEl.innerHTML = "";
+  }
+
+  wireCanvasInteractions();
+}
+
+function clearHighlight() {
+  document.querySelectorAll(".node").forEach(x => x.classList.remove("selected", "pred-highlight", "succ-highlight", "dimmed"));
+  document.querySelectorAll("svg path[data-source]").forEach(x => x.classList.remove("edge-pred-highlight", "edge-succ-highlight", "edge-dimmed"));
+}
+
+function applyHighlight(el) {
+  const nodeEls = Array.from(document.querySelectorAll(".node"));
+  const edgeEls = Array.from(document.querySelectorAll("svg path[data-source]"));
+  const n = GRAPH.nodes.find(x => x.id === el.dataset.id);
+  const predIds = new Set(n?.predecessors || []);
+  const succIds = new Set(n?.successors || []);
+  clearHighlight();
+  nodeEls.forEach((other) => {
+    if (other === el) other.classList.add("selected");
+    else if (predIds.has(other.dataset.id)) other.classList.add("pred-highlight");
+    else if (succIds.has(other.dataset.id)) other.classList.add("succ-highlight");
+    else other.classList.add("dimmed");
+  });
+  edgeEls.forEach((edge) => {
+    if (edge.dataset.target === el.dataset.id) edge.classList.add("edge-pred-highlight");
+    else if (edge.dataset.source === el.dataset.id) edge.classList.add("edge-succ-highlight");
+    else edge.classList.add("edge-dimmed");
+  });
+}
+
+function wireCanvasInteractions() {
+  const nodeEls = Array.from(document.querySelectorAll(".node"));
+
+  nodeEls.forEach((el) => {
+    el.addEventListener("click", () => {
+      if (el.classList.contains("selected")) { clearHighlight(); return; }
+      applyHighlight(el);
+    });
+    el.addEventListener("dblclick", () => {
+      const n = GRAPH.nodes.find(x => x.id === el.dataset.id);
+      if (n) openModal(n);
+    });
+  });
+
+  wireMetaLineEditing();
+
+  const todayBtn = document.getElementById("today-btn");
+  if (todayBtn) todayBtn.addEventListener("click", goToday);
+}
+
+let GLOBAL_LISTENERS_WIRED = false;
+function wireGlobalListenersOnce() {
+  if (GLOBAL_LISTENERS_WIRED) return;
+  GLOBAL_LISTENERS_WIRED = true;
+
+  // Click on empty space clears the click-highlight.
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".node") || e.target.closest(".overlay")) return;
+    clearHighlight();
+  });
+
+  // Delegated handling for the hover-panel relation-add controls, since
+  // cards are re-rendered on every filter/mode change.
+  document.addEventListener("click", (e) => {
+    const addBtn = e.target.closest(".extra-rel-btn");
+    if (addBtn) {
+      e.stopPropagation();
+      openRelSearch(addBtn.closest(".extra-rel-row"), addBtn.dataset.node, addBtn.dataset.relType);
+      return;
+    }
+    const closeBtn = e.target.closest(".extra-rel-close");
+    if (closeBtn) {
+      e.stopPropagation();
+      const row = closeBtn.closest(".extra-rel-row");
+      resetRelRow(row, row.dataset.node, row.dataset.relType);
+      return;
+    }
+    const resultEl = e.target.closest(".extra-rel-result");
+    if (resultEl) {
+      e.stopPropagation();
+      const row = resultEl.closest(".extra-rel-row");
+      addRelationFromHover(row.dataset.node, row.dataset.relType, resultEl.dataset.id);
+      return;
+    }
+  });
+  document.addEventListener("input", (e) => {
+    if (e.target.classList.contains("extra-rel-search")) {
+      const row = e.target.closest(".extra-rel-row");
+      renderRelSearchResults(row, row.dataset.node, row.dataset.relType, e.target.value);
+    }
+  });
+}
+
+function relLabel(relType) { return relType === "predecessors" ? "선행목표 추가" : "후속목표 추가"; }
+
+function resetRelRow(row, nodeId, relType) {
+  row.innerHTML = `<button type="button" class="extra-rel-btn" data-rel-type="${relType}" data-node="${esc(nodeId)}">+ ${esc(relLabel(relType))}</button>`;
+}
+
+function openRelSearch(row, nodeId, relType) {
+  row.innerHTML = `
+    <div class="extra-rel-search-wrap">
+      <input type="text" class="extra-rel-search" placeholder="목표 이름 검색…" autocomplete="off">
+      <button type="button" class="extra-rel-close" title="닫기">✕</button>
+    </div>
+    <div class="extra-rel-results"></div>`;
+  renderRelSearchResults(row, nodeId, relType, "");
+  const input = row.querySelector(".extra-rel-search");
+  if (input) input.focus();
+}
+
+function renderRelSearchResults(row, nodeId, relType, query) {
+  const node = GRAPH.nodes.find(x => x.id === nodeId);
+  const already = new Set([...(node?.predecessors || []), ...(node?.successors || [])]);
+  const q = query.trim().toLowerCase();
+  const matches = GRAPH.nodes
+    .filter(n => n.id !== nodeId && !already.has(n.id))
+    .filter(n => !q || n.title.toLowerCase().includes(q))
+    .sort((a, b) => a.title.localeCompare(b.title, "ko"))
+    .slice(0, 30);
+  const resultsEl = row.querySelector(".extra-rel-results");
+  if (!resultsEl) return;
+  resultsEl.innerHTML = matches.length
+    ? matches.map(n => `<button type="button" class="extra-rel-result" data-id="${esc(n.id)}">${n.icon || CATEGORY_META[n.categories[0] ?? "__NONE__"].emoji} ${esc(n.title)}</button>`).join("")
+    : `<div class="extra-rel-empty">검색 결과가 없어요</div>`;
+}
+
+async function addRelationFromHover(nodeId, relType, targetId) {
+  const node = GRAPH.nodes.find(x => x.id === nodeId);
+  if (!node) return;
+  const predecessors = relType === "predecessors" ? [...(node.predecessors || []), targetId] : [...(node.predecessors || [])];
+  const successors = relType === "successors" ? [...(node.successors || []), targetId] : [...(node.successors || [])];
+  try {
+    const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(nodeId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: node.status, targetDate: node.targetDate, note: node.note, predecessors, successors }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    load();
+  } catch (err) {
+    alert("추가하지 못했어요: " + err.message);
+  }
+}
+
+function formatPeriodKorean(dateStr) {
+  if (!dateStr) return null;
+  const [y, m] = dateStr.split("-").map(Number);
+  return `${String(y).slice(2)}년 ${m}월`;
+}
+
+function metaLineDisplayHtml(date, note, status) {
+  const dateText = date
+    ? (status === "달성" ? `${formatPeriodKorean(date)}에 달성!` : formatPeriodKorean(date))
+    : (status === "달성" ? "달성!" : null);
+  const parts = [];
+  if (dateText) parts.push(`<span class="meta-date">${esc(dateText)}</span>`);
+  if (note) parts.push(`<span class="meta-note${dateText ? "" : " no-divider"}">${esc(note)}</span>`);
+  return parts.join("");
+}
+
+function wireMetaLineEditing() {
+  document.querySelectorAll(".node-meta-line").forEach((el) => {
+    el.addEventListener("click", (e) => e.stopPropagation());
+    el.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      startMetaEdit(el);
+    });
+  });
+}
+
+function startMetaEdit(el) {
+  if (el.querySelector(".meta-edit")) return;
+  const id = el.dataset.id;
+  const date = el.dataset.date;
+  const note = el.dataset.note;
+  const editingNode = GRAPH.nodes.find(x => x.id === id);
+  const status = editingNode ? editingNode.status : null;
+  el.innerHTML = `
+    <div class="meta-edit">
+      <input type="date" class="meta-edit-date" value="${esc(date)}">
+      <input type="text" class="meta-edit-note" value="${esc(note)}" placeholder="메모">
+    </div>`;
+  const dateInput = el.querySelector(".meta-edit-date");
+  const noteInput = el.querySelector(".meta-edit-note");
+  [dateInput, noteInput].forEach(inp => inp.addEventListener("click", (e) => e.stopPropagation()));
+  noteInput.focus();
+
+  let settled = false;
+  function revert() {
+    el.dataset.date = date;
+    el.dataset.note = note;
+    el.innerHTML = metaLineDisplayHtml(date, note, status);
+  }
+  async function save() {
+    if (settled) return;
+    settled = true;
+    const node = GRAPH.nodes.find(x => x.id === id);
+    const newDate = dateInput.value || null;
+    const newNote = noteInput.value;
+    try {
+      const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: node.status, targetDate: newDate, note: newNote,
+          predecessors: node.predecessors || [], successors: node.successors || [],
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (node) { node.targetDate = newDate; node.note = newNote; }
+      el.dataset.date = newDate || "";
+      el.dataset.note = newNote || "";
+      el.innerHTML = metaLineDisplayHtml(newDate, newNote, status);
+    } catch (err) {
+      alert("저장하지 못했어요: " + err.message);
+      revert();
+    }
+  }
+  function onKey(e) {
+    if (e.key === "Enter") { e.preventDefault(); save(); }
+    if (e.key === "Escape") { settled = true; revert(); }
+  }
+  dateInput.addEventListener("keydown", onKey);
+  noteInput.addEventListener("keydown", onKey);
+  dateInput.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== noteInput) save(); }, 120));
+  noteInput.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== dateInput) save(); }, 120));
+}
+
+function goToday() {
+  const x = document.querySelector(".today-label");
+  const scrollEl = document.getElementById("timeline-scroll");
+  if (!x) return;
+  scrollEl.scrollTo({ left: Math.max(0, parseFloat(x.style.left) - scrollEl.clientWidth / 2), behavior: "smooth" });
+}
+
+function goTo(id) {
+  const el = document.querySelector(`.node[data-id="${CSS.escape(id)}"]`);
+  if (!el) {
+    const n = GRAPH.nodes.find(x => x.id === id);
+    if (n) openModal(n);
+    return;
+  }
+  el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+  el.classList.add("selected");
+  setTimeout(() => el.classList.remove("selected"), 1600);
+}
+
+function relationOptionsHtml(excludeId, alreadyIds) {
+  const taken = new Set(alreadyIds);
+  return GRAPH.nodes
+    .filter(n => n.id !== excludeId && !taken.has(n.id))
+    .sort((a, b) => a.title.localeCompare(b.title, "ko"))
+    .map(n => `<option value="${esc(n.id)}">${esc(n.title)}</option>`)
+    .join("");
+}
+
+function relationChipsHtml(ids, fieldName) {
+  return ids.map((id) => {
+    const n = GRAPH.nodes.find(x => x.id === id);
+    const title = n ? n.title : "(알 수 없음)";
+    return `<span class="rel-chip" data-rel-id="${esc(id)}">${esc(title)}<button type="button" class="rel-remove" data-field="${fieldName}" data-id="${esc(id)}">✕</button></span>`;
+  }).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>';
+}
+
+function renderBlocksHtml(blocks) {
+  if (!blocks.length) return '<span style="color:var(--ink-soft)">내용이 없어요.</span>';
+  let html = "";
+  let listOpen = null;
+  function closeList() { if (listOpen) { html += `</${listOpen}>`; listOpen = null; } }
+  for (const b of blocks) {
+    if (b.type === "bulleted_list_item") {
+      if (listOpen !== "ul") { closeList(); html += "<ul>"; listOpen = "ul"; }
+      html += `<li>${esc(b.text)}</li>`;
+      continue;
+    }
+    if (b.type === "numbered_list_item") {
+      if (listOpen !== "ol") { closeList(); html += "<ol>"; listOpen = "ol"; }
+      html += `<li>${esc(b.text)}</li>`;
+      continue;
+    }
+    closeList();
+    if (b.type === "heading_1") html += `<h3>${esc(b.text)}</h3>`;
+    else if (b.type === "heading_2") html += `<h4>${esc(b.text)}</h4>`;
+    else if (b.type === "heading_3") html += `<h5>${esc(b.text)}</h5>`;
+    else if (b.type === "divider") html += `<hr>`;
+    else if (b.type === "quote") html += `<blockquote>${esc(b.text)}</blockquote>`;
+    else if (b.type === "to_do") html += `<div>${b.checked ? "☑" : "☐"} ${esc(b.text)}</div>`;
+    else if (b.type === "code") html += `<pre><code>${esc(b.text)}</code></pre>`;
+    else if (b.type === "image") html += `<div><em>[이미지: ${esc(b.text)}]</em></div>`;
+    else if (b.text) html += `<p>${esc(b.text)}</p>`;
+  }
+  closeList();
+  return html;
+}
+
+function openCreateModal() {
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-top">
+        <div><h2>✨ 새 목표 추가</h2></div>
+      </div>
+      <div class="field">
+        <label>제목</label>
+        <input type="text" id="c-title" placeholder="목표 이름을 적어주세요">
+      </div>
+      <div class="field">
+        <label>카테고리</label>
+        <div class="rel-chips">
+          ${CATEGORY_ORDER.filter(c => c !== "__NONE__").map((c) => {
+            const m = CATEGORY_META[c];
+            return `<label class="filter-chip" style="--chip-fg:${m.fg};--chip-bg:${m.bg}"><input type="checkbox" class="c-cat-cb" value="${esc(c)}">${m.emoji} ${esc(m.label)}</label>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="field">
+        <label>상태</label>
+        <select id="c-status">
+          ${Object.keys(STATUS_META).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label>목표 시기</label>
+        <input type="date" id="c-date">
+      </div>
+      <div class="field">
+        <label>메모</label>
+        <textarea id="c-note" placeholder="메모 (선택)"></textarea>
+      </div>
+      <div class="modal-msg" id="c-msg"></div>
+      <div class="modal-actions">
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn" id="c-cancel">닫기</button>
+          <button class="btn primary" id="c-save">추가</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  overlay.querySelector("#c-cancel").addEventListener("click", () => overlay.remove());
+  overlay.querySelector("#c-title").focus();
+
+  overlay.querySelector("#c-save").addEventListener("click", async () => {
+    const title = overlay.querySelector("#c-title").value.trim();
+    const msg = overlay.querySelector("#c-msg");
+    if (!title) {
+      msg.textContent = "제목을 입력해주세요.";
+      msg.className = "modal-msg err";
+      return;
+    }
+    const status = overlay.querySelector("#c-status").value;
+    const targetDate = overlay.querySelector("#c-date").value || null;
+    const note = overlay.querySelector("#c-note").value;
+    const categories = Array.from(overlay.querySelectorAll(".c-cat-cb:checked")).map(cb => cb.value);
+
+    msg.textContent = "추가하는 중...";
+    msg.className = "modal-msg";
+    try {
+      const res = await fetch(WORKER_URL + "/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, status, targetDate, note, categories }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      msg.textContent = "추가했어요.";
+      msg.className = "modal-msg ok";
+      setTimeout(() => { overlay.remove(); load(); }, 400);
+    } catch (err) {
+      msg.textContent = "추가 실패: " + err.message + " (Worker에 /goals 생성 엔드포인트가 추가되어 있는지 확인해주세요)";
+      msg.className = "modal-msg err";
+    }
+  });
+}
+
+function openModal(node) {
+  const cat = CATEGORY_META[node.categories[0] ?? "__NONE__"];
+  let predecessors = [...(node.predecessors || [])];
+  let successors = [...(node.successors || [])];
+  const navIdx = FULL_ORDER.indexOf(node.id);
+
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-top">
+        <div>
+          <h2>${node.icon || cat.emoji} ${esc(node.title)}</h2>
+          <div class="meta">${esc(cat.label)} · <a class="open-link" href="${esc(node.url)}" target="_blank" rel="noopener">노션에서 열기 ↗</a></div>
+        </div>
+        <div class="nav-row">
+          <button id="nav-prev" ${navIdx <= 0 ? "disabled" : ""}>◀ 이전</button>
+          <button id="nav-next" ${navIdx === -1 || navIdx >= FULL_ORDER.length - 1 ? "disabled" : ""}>다음 ▶</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>상태</label>
+        <select id="f-status">
+          ${Object.keys(STATUS_META).map(s => `<option value="${esc(s)}" ${s === node.status ? "selected" : ""}>${esc(s)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label>목표 시기</label>
+        <input type="date" id="f-date" value="${esc(node.targetDate ?? "")}">
+      </div>
+      <div class="field">
+        <label>메모</label>
+        <textarea id="f-note">${esc(node.note ?? "")}</textarea>
+      </div>
+      <div class="field">
+        <label>선행 목표</label>
+        <div class="rel-chips" id="pred-chips">${relationChipsHtml(predecessors, "predecessors")}</div>
+        <div class="rel-add">
+          <select id="pred-select"><option value="">추가할 목표 선택…</option>${relationOptionsHtml(node.id, predecessors)}</select>
+          <button type="button" class="btn" id="pred-add">추가</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>후속 목표</label>
+        <div class="rel-chips" id="succ-chips">${relationChipsHtml(successors, "successors")}</div>
+        <div class="rel-add">
+          <select id="succ-select"><option value="">추가할 목표 선택…</option>${relationOptionsHtml(node.id, successors)}</select>
+          <button type="button" class="btn" id="succ-add">추가</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>페이지 내용</label>
+        <div class="content-box" id="page-content">불러오는 중…</div>
+      </div>
+      <div class="modal-msg" id="f-msg"></div>
+      <div class="modal-actions">
+        <button class="btn danger" id="f-delete">삭제</button>
+        <div class="modal-actions-right">
+          <button class="btn" id="f-cancel">닫기</button>
+          <button class="btn primary" id="f-save">저장</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id) + "/content")
+    .then(r => r.json())
+    .then(data => {
+      const box = overlay.querySelector("#page-content");
+      if (data.error) { box.textContent = "내용을 불러오지 못했어요."; return; }
+      box.innerHTML = renderBlocksHtml(data.blocks || []);
+    })
+    .catch(() => { overlay.querySelector("#page-content").textContent = "내용을 불러오지 못했어요."; });
+
+  function refreshRelChips() {
+    overlay.querySelector("#pred-chips").innerHTML = relationChipsHtml(predecessors, "predecessors");
+    overlay.querySelector("#succ-chips").innerHTML = relationChipsHtml(successors, "successors");
+    overlay.querySelector("#pred-select").innerHTML = '<option value="">추가할 목표 선택…</option>' + relationOptionsHtml(node.id, predecessors);
+    overlay.querySelector("#succ-select").innerHTML = '<option value="">추가할 목표 선택…</option>' + relationOptionsHtml(node.id, successors);
+    overlay.querySelectorAll(".rel-remove").forEach(btn => btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      if (btn.dataset.field === "predecessors") predecessors = predecessors.filter(x => x !== id);
+      else successors = successors.filter(x => x !== id);
+      refreshRelChips();
+    }));
+  }
+  refreshRelChips();
+
+  overlay.querySelector("#pred-add").addEventListener("click", () => {
+    const sel = overlay.querySelector("#pred-select");
+    if (sel.value) { predecessors.push(sel.value); refreshRelChips(); }
+  });
+  overlay.querySelector("#succ-add").addEventListener("click", () => {
+    const sel = overlay.querySelector("#succ-select");
+    if (sel.value) { successors.push(sel.value); refreshRelChips(); }
+  });
+
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  overlay.querySelector("#f-cancel").addEventListener("click", () => overlay.remove());
+
+  function goNav(delta) {
+    const newIdx = navIdx + delta;
+    if (newIdx < 0 || newIdx >= FULL_ORDER.length) return;
+    const n = GRAPH.nodes.find(x => x.id === FULL_ORDER[newIdx]);
+    overlay.remove();
+    if (n) openModal(n);
+  }
+  overlay.querySelector("#nav-prev").addEventListener("click", () => goNav(-1));
+  overlay.querySelector("#nav-next").addEventListener("click", () => goNav(1));
+
+  overlay.querySelector("#f-delete").addEventListener("click", async () => {
+    if (!confirm(`"${node.title}"을(를) 삭제할까요? (노션에서 휴지통으로 이동돼요, 복구 가능)`)) return;
+    const msg = overlay.querySelector("#f-msg");
+    msg.textContent = "삭제 중...";
+    msg.className = "modal-msg";
+    try {
+      const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: true }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      overlay.remove();
+      load();
+    } catch (err) {
+      msg.textContent = "삭제 실패: " + err.message;
+      msg.className = "modal-msg err";
+    }
+  });
+
+  overlay.querySelector("#f-save").addEventListener("click", async () => {
+    const status = overlay.querySelector("#f-status").value;
+    const targetDate = overlay.querySelector("#f-date").value || null;
+    const note = overlay.querySelector("#f-note").value;
+    const msg = overlay.querySelector("#f-msg");
+    msg.textContent = "저장 중...";
+    msg.className = "modal-msg";
+    try {
+      const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, targetDate, note, predecessors, successors }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      msg.textContent = "저장했어요.";
+      msg.className = "modal-msg ok";
+      setTimeout(() => { overlay.remove(); load(); }, 400);
+    } catch (err) {
+      msg.textContent = "저장 실패: " + err.message;
+      msg.className = "modal-msg err";
+    }
+  });
+}
+
+wireGlobalListenersOnce();
+load();
+</script>
+</body>
+</html>
