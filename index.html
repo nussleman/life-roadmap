@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper:#f4ecdc; --paper-raised:#ecdec2; --paper-hover:#e2cea3;
+    --paper:#faf6ea; --paper-raised:#f0e6cd; --paper-hover:#e8d9b0;
+    --chrome:#e3d1ab; --chrome-hover:#d8c294;
     --ink:#2b2018; --ink-soft:#7d6c53; --line:#d3bd94;
     --accent:#a8672a; --warn:#a13a2a;
     --pred-color:#35607e; --succ-color:#a8672a;
@@ -24,7 +25,7 @@
   h1 { font-family:"Fraunces",serif; font-weight:500; font-size:21px; margin:0; color:var(--ink); }
   a { color: inherit; }
   body { display:flex; flex-direction:column; }
-  #topbar { flex-shrink:0; background:var(--paper); border-bottom:1px solid var(--line); }
+  #topbar { flex-shrink:0; background:var(--chrome); border-bottom:1px solid var(--line); }
   header { padding:14px 24px 12px; }
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
@@ -34,9 +35,11 @@
   .ctrl-btn { font-size:12px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer; }
   .ctrl-btn:hover { background:var(--paper-hover); }
   .ctrl-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+  .ctrl-btn.primary-ctrl { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .ctrl-btn.primary-ctrl:hover { background:var(--accent); color:#fff; }
   #right-controls { display:flex; gap:6px; margin-left:auto; }
   .layout { display:flex; flex:1; min-height:0; }
-  aside { width:190px; flex-shrink:0; background:var(--paper); border-right:1px solid var(--line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
+  aside { width:190px; flex-shrink:0; background:var(--chrome); border-right:1px solid var(--line); padding:16px; font-size:13px; height:100%; overflow-y:auto; }
   .section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:0 0 8px; }
   .section { margin-bottom:18px; }
   #search { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:13px; }
@@ -113,6 +116,8 @@
   .node:hover .node-extra { opacity:1; visibility:visible; transform:translateY(0); }
   .node:hover { z-index:30; }
   .node-cats { display:flex; flex-wrap:wrap; gap:4px; }
+  .node-images { display:flex; gap:4px; }
+  .node-images img { width:100%; height:64px; object-fit:cover; border-radius:5px; flex:1; min-width:0; background:var(--paper-raised); }
   .cat-tag { font-size:10px; font-weight:600; padding:1px 7px; border-radius:999px; white-space:nowrap; }
   .extra-status-row { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink); }
   .status-label-text { font-weight:500; }
@@ -529,6 +534,7 @@ function renderStatic() {
     <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
     ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
     <div id="right-controls">
+      <button class="ctrl-btn primary-ctrl" id="new-goal-btn">+ 새 목표</button>
       <button class="ctrl-btn${STATUS_COLOR_MODE ? " active" : ""}" id="statuscolor-btn">상태별 색칠</button>
       <button class="ctrl-btn" id="mode-btn"></button>
       <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
@@ -564,6 +570,7 @@ function renderStatic() {
     e.target.classList.toggle("active", STATUS_COLOR_MODE);
     rerenderCanvas();
   });
+  document.getElementById("new-goal-btn").addEventListener("click", openCreateModal);
 
   document.querySelectorAll("[data-goto]").forEach(btn => btn.addEventListener("click", () => goTo(btn.dataset.goto)));
 }
@@ -665,12 +672,16 @@ function renderNodeDiv(n, w, h) {
   const progressClass = n.status === "진행 중" ? "progress-glow" : "";
   const posStyle = n.flow ? `position:static;` : `left:${n.x}px;top:${n.y}px;`;
   const sizeStyle = (w != null ? `width:${w}px;` : "") + (h != null ? `height:${h}px;` : "");
+  const imagesHtml = (Array.isArray(n.images) && n.images.length)
+    ? `<div class="node-images">${n.images.slice(0, 4).map(url => `<img src="${esc(url)}" loading="lazy" alt="">`).join("")}</div>`
+    : "";
   return `<div class="node ${n.overdue ? "overdue" : ""} ${readyToStart ? "ready-to-start" : ""} ${n.flow ? "node-flow" : ""} ${achievedClass} ${progressClass}" data-id="${esc(n.id)}"
     style="${posStyle}${sizeStyle}background:${cardBg};--glow-color:${cardBorder};">
     ${readyToStart ? '<div class="ready-badge" title="선행 목표가 없어요 — 지금 시작해도 좋아요">💡</div>' : ""}
     <div class="node-title">${emoji} ${esc(n.title)}</div>
     <div class="node-meta-line" data-id="${esc(n.id)}" data-date="${esc(n.targetDate ?? "")}" data-note="${esc(n.note ?? "")}">${metaText}</div>
     <div class="node-extra">
+      ${imagesHtml}
       <div class="extra-status-row">
         <span class="status-chip" style="background:${meta.bg};color:${meta.fg};border-color:${meta.fg}55">${STATUS_ICONS[n.status]}</span>
         <span class="status-label-text">${esc(meta.label)}</span>
@@ -859,56 +870,22 @@ function buildChainView(nodes) {
       dummyPos.set(id, { x, y });
     });
 
-    // Pick which side of a card an edge should touch (right/left/top/bottom)
-    // based on the direction toward the point it's heading to or coming from.
-    function anchorSide(box, refX, refY) {
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const dx = refX - cx, dy = refY - cy;
-      if (Math.abs(dy) > Math.abs(dx) * 1.15) return dy > 0 ? "bottom" : "top";
-      return dx > 0 ? "right" : "left";
-    }
-    function pointOnSide(box, side, frac) {
-      if (side === "right") return { x: box.x + box.w, y: box.y + box.h * frac };
-      if (side === "left") return { x: box.x, y: box.y + box.h * frac };
-      if (side === "bottom") return { x: box.x + box.w * frac, y: box.y + box.h };
-      return { x: box.x + box.w * frac, y: box.y };
+    // Always leave from the vertical center of the right side and arrive at
+    // the vertical center of the left side — no corner-ish anchors, no
+    // per-edge side switching. Simple, predictable, always centered.
+    function rightCenter(box) { return { x: box.x + box.w, y: box.y + box.h / 2 }; }
+    function leftCenter(box) { return { x: box.x, y: box.y + box.h / 2 }; }
+
+    for (const [key, chain] of edgeChainIds) {
+      edgeSides.set(key, { srcSide: "right", tgtSide: "left" });
     }
 
     for (const [key, chain] of edgeChainIds) {
       const srcBox = posOfReal.get(chain[0]);
       const tgtBox = posOfReal.get(chain[chain.length - 1]);
-      const refForSrc = chain.length > 2 ? dummyPos.get(chain[1]) : { x: tgtBox.x + tgtBox.w / 2, y: tgtBox.y + tgtBox.h / 2 };
-      const refForTgt = chain.length > 2 ? dummyPos.get(chain[chain.length - 2]) : { x: srcBox.x + srcBox.w / 2, y: srcBox.y + srcBox.h / 2 };
-      edgeSides.set(key, {
-        srcSide: anchorSide(srcBox, refForSrc.x, refForSrc.y),
-        tgtSide: anchorSide(tgtBox, refForTgt.x, refForTgt.y),
-      });
-    }
-
-    // Spread multiple edges touching the same side of a card across that side,
-    // instead of all converging on the exact same point.
-    const portTotal = new Map(), portSeen = new Map();
-    for (const [key, chain] of edgeChainIds) {
-      const { srcSide, tgtSide } = edgeSides.get(key);
-      const sk = chain[0] + ":" + srcSide, tk = chain[chain.length - 1] + ":" + tgtSide;
-      portTotal.set(sk, (portTotal.get(sk) || 0) + 1);
-      portTotal.set(tk, (portTotal.get(tk) || 0) + 1);
-    }
-    function portPoint(id, side) {
-      const box = posOfReal.get(id);
-      const k = id + ":" + side;
-      const total = portTotal.get(k) || 1;
-      const seen = portSeen.get(k) || 0;
-      portSeen.set(k, seen + 1);
-      const frac = total <= 1 ? 0.5 : (0.2 + ((seen + 1) / (total + 1)) * 0.6);
-      return pointOnSide(box, side, frac);
-    }
-
-    for (const [key, chain] of edgeChainIds) {
-      const { srcSide, tgtSide } = edgeSides.get(key);
       const pts = chain.map((id, idx) => {
-        if (idx === 0) return portPoint(id, srcSide);
-        if (idx === chain.length - 1) return portPoint(id, tgtSide);
+        if (idx === 0) return rightCenter(srcBox);
+        if (idx === chain.length - 1) return leftCenter(tgtBox);
         return dummyPos.get(id);
       });
       edgeWaypoints.set(key, pts);
@@ -1268,6 +1245,90 @@ function renderBlocksHtml(blocks) {
   }
   closeList();
   return html;
+}
+
+function openCreateModal() {
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-top">
+        <div><h2>✨ 새 목표 추가</h2></div>
+      </div>
+      <div class="field">
+        <label>제목</label>
+        <input type="text" id="c-title" placeholder="목표 이름을 적어주세요">
+      </div>
+      <div class="field">
+        <label>카테고리</label>
+        <div class="rel-chips">
+          ${CATEGORY_ORDER.filter(c => c !== "__NONE__").map((c) => {
+            const m = CATEGORY_META[c];
+            return `<label class="filter-chip" style="--chip-fg:${m.fg};--chip-bg:${m.bg}"><input type="checkbox" class="c-cat-cb" value="${esc(c)}">${m.emoji} ${esc(m.label)}</label>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="field">
+        <label>상태</label>
+        <select id="c-status">
+          ${Object.keys(STATUS_META).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label>목표 시기</label>
+        <input type="date" id="c-date">
+      </div>
+      <div class="field">
+        <label>메모</label>
+        <textarea id="c-note" placeholder="메모 (선택)"></textarea>
+      </div>
+      <div class="modal-msg" id="c-msg"></div>
+      <div class="modal-actions">
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn" id="c-cancel">닫기</button>
+          <button class="btn primary" id="c-save">추가</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  overlay.querySelector("#c-cancel").addEventListener("click", () => overlay.remove());
+  overlay.querySelector("#c-title").focus();
+
+  overlay.querySelector("#c-save").addEventListener("click", async () => {
+    const title = overlay.querySelector("#c-title").value.trim();
+    const msg = overlay.querySelector("#c-msg");
+    if (!title) {
+      msg.textContent = "제목을 입력해주세요.";
+      msg.className = "modal-msg err";
+      return;
+    }
+    const status = overlay.querySelector("#c-status").value;
+    const targetDate = overlay.querySelector("#c-date").value || null;
+    const note = overlay.querySelector("#c-note").value;
+    const categories = Array.from(overlay.querySelectorAll(".c-cat-cb:checked")).map(cb => cb.value);
+
+    msg.textContent = "추가하는 중...";
+    msg.className = "modal-msg";
+    try {
+      const res = await fetch(WORKER_URL + "/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, status, targetDate, note, categories }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      msg.textContent = "추가했어요.";
+      msg.className = "modal-msg ok";
+      setTimeout(() => { overlay.remove(); load(); }, 400);
+    } catch (err) {
+      msg.textContent = "추가 실패: " + err.message + " (Worker에 /goals 생성 엔드포인트가 추가되어 있는지 확인해주세요)";
+      msg.className = "modal-msg err";
+    }
+  });
 }
 
 function openModal(node) {
