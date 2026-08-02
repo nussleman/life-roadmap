@@ -938,7 +938,7 @@ function renderSequenceMode(filtered) {
     return `<path d="${d}" fill="none" stroke="#96805f" stroke-width="1.5" opacity="0.9" marker-end="url(#arrowhead)" data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
   }).join("");
 
-  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, null)).join("");
+  const nodeDivs = view.placed.map(n => renderNodeDiv(n, n.w, n.h)).join("");
 
   document.getElementById("canvas").style.width = view.totalWidth + "px";
   document.getElementById("canvas").style.height = view.totalHeight + "px";
