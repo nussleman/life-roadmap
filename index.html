@@ -703,7 +703,7 @@ function extraRelRowHtml(nodeId, relType, label) {
   </div>`;
 }
 
-const CHAIN_COL_W = 340, CHAIN_ROW_GAP = 16;
+const CHAIN_COL_W = 300, CHAIN_ROW_GAP = 16;
 
 function buildChainView(nodes) {
   const idSet = new Set(nodes.map(n => n.id));
@@ -741,11 +741,12 @@ function buildChainView(nodes) {
 
   function sizeFor(id) {
     const d = inDegree.get(id) || 0;
-    const w = Math.min(NODE_W + d * 26, 300);
+    const w = NODE_W;
     const title = byId.get(id)?.title || "";
     const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
     const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
-    const h = Math.min(Math.max(NODE_H + d * 14, 46 + lines * 19 + 16), 230);
+    const baseH = Math.max(NODE_H, 46 + lines * 19 + 16);
+    const h = Math.min(baseH + d * 30, 260);
     return { w, h };
   }
 
@@ -851,13 +852,25 @@ function buildChainView(nodes) {
     }
 
     const maxRow = Math.max(...compAll.map(id => rowOf.get(id)));
-    const rowHeight = Math.max(...comp.map(id => sizeFor(id).h)) + CHAIN_ROW_GAP;
+    const rowsCount = maxRow + 1;
+    const rowMaxH = new Array(rowsCount).fill(NODE_H);
+    compAll.forEach(id => {
+      const h = id.startsWith("__d") ? NODE_H : sizeFor(id).h;
+      const r = rowOf.get(id);
+      if (h > rowMaxH[r]) rowMaxH[r] = h;
+    });
+    const rowY = new Array(rowsCount);
+    let rowCursor = blockY;
+    for (let r = 0; r < rowsCount; r++) {
+      rowY[r] = rowCursor;
+      rowCursor += rowMaxH[r] + CHAIN_ROW_GAP;
+    }
 
     const posOfReal = new Map();
     comp.forEach((id) => {
       const { w, h } = sizeFor(id);
       const x = TIMELINE_START + rank.get(id) * CHAIN_COL_W;
-      const y = blockY + rowOf.get(id) * rowHeight;
+      const y = rowY[rowOf.get(id)];
       posOfReal.set(id, { x, y, w, h });
       placed.push({ ...byId.get(id), x, y, w, h });
     });
@@ -865,7 +878,7 @@ function buildChainView(nodes) {
     const dummyPos = new Map();
     dummyRank.forEach((r, id) => {
       const x = TIMELINE_START + r * CHAIN_COL_W + NODE_W / 2;
-      const y = blockY + rowOf.get(id) * rowHeight + rowHeight / 2;
+      const y = rowY[rowOf.get(id)] + rowMaxH[rowOf.get(id)] / 2;
       dummyPos.set(id, { x, y });
     });
 
@@ -890,7 +903,7 @@ function buildChainView(nodes) {
       edgeWaypoints.set(key, pts);
     }
 
-    blockY += (maxRow + 1) * rowHeight + 44;
+    blockY = rowCursor + 44;
   }
 
   const maxX = placed.length ? Math.max(...placed.map(p => p.x + p.w)) : TIMELINE_START;
