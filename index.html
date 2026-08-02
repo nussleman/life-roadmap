@@ -703,7 +703,7 @@ function extraRelRowHtml(nodeId, relType, label) {
   </div>`;
 }
 
-const CHAIN_COL_W = 300, CHAIN_ROW_GAP = 16;
+const CHAIN_COL_W = 340, CHAIN_ROW_GAP = 16;
 
 function buildChainView(nodes) {
   const idSet = new Set(nodes.map(n => n.id));
@@ -741,11 +741,11 @@ function buildChainView(nodes) {
 
   function sizeFor(id) {
     const d = inDegree.get(id) || 0;
-    const w = Math.min(NODE_W + d * 10, 270);
+    const w = Math.min(NODE_W + d * 26, 300);
     const title = byId.get(id)?.title || "";
     const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
     const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
-    const h = Math.min(Math.max(NODE_H, 46 + lines * 19 + 16), 190);
+    const h = Math.min(Math.max(NODE_H + d * 14, 46 + lines * 19 + 16), 230);
     return { w, h };
   }
 
