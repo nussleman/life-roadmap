@@ -708,7 +708,7 @@ const CHAIN_COL_W = 300, CHAIN_ROW_GAP = 16;
 function buildChainView(nodes) {
   const idSet = new Set(nodes.map(n => n.id));
   const seqEdges = GRAPH.edges.filter(e => e.kind === "sequence" && idSet.has(e.source) && idSet.has(e.target));
-  const degree = new Map(nodes.map(n => [n.id, 0]));
+  const inDegree = new Map(nodes.map(n => [n.id, 0]));
   const succMap = new Map(nodes.map(n => [n.id, []]));
   const predMap = new Map(nodes.map(n => [n.id, []]));
   const adj = new Map(nodes.map(n => [n.id, new Set()]));
@@ -717,8 +717,7 @@ function buildChainView(nodes) {
     predMap.get(e.target).push(e.source);
     adj.get(e.source).add(e.target);
     adj.get(e.target).add(e.source);
-    degree.set(e.source, degree.get(e.source) + 1);
-    degree.set(e.target, degree.get(e.target) + 1);
+    inDegree.set(e.target, inDegree.get(e.target) + 1);
   }
 
   const visited = new Set();
@@ -741,7 +740,7 @@ function buildChainView(nodes) {
   const byId = new Map(nodes.map(n => [n.id, n]));
 
   function sizeFor(id) {
-    const d = degree.get(id) || 0;
+    const d = inDegree.get(id) || 0;
     const w = Math.min(NODE_W + d * 10, 270);
     const title = byId.get(id)?.title || "";
     const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
