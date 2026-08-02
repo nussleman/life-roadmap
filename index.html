@@ -68,7 +68,7 @@
   .seq-label { padding:5px 10px; font-size:11px; color:var(--ink-soft); }
   .canvas { position:relative; }
   .lane-bg { position:absolute; left:0; right:0; }
-  .node { position:absolute; display:flex; flex-direction:column; gap:6px; border:none; border-radius:8px; padding:9px 11px; cursor:pointer; overflow:visible; background-clip:padding-box; box-shadow:0 0 6px 0px var(--glow-color, var(--line)), 0 0 14px 0px var(--glow-color, var(--line)); transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
+  .node { position:absolute; display:flex; flex-direction:column; gap:4px; border:none; border-radius:8px; padding:7px 10px; cursor:pointer; overflow:visible; background-clip:padding-box; box-shadow:0 0 6px 0px var(--glow-color, var(--line)), 0 0 14px 0px var(--glow-color, var(--line)); transition:box-shadow .18s ease, opacity .18s ease, filter .18s ease; }
   .node:hover { filter:brightness(0.98); }
   .node.overdue { box-shadow:0 0 8px 0px var(--warn), 0 0 16px 0px rgba(161,58,42,0.6); }
   .ready-badge {
@@ -92,7 +92,7 @@
   .node-title { font-size:13.5px; font-weight:600; line-height:1.3; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
   .node-meta-line { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-soft); cursor:text; border-radius:4px; padding:2px 2px; margin:-2px -2px; }
   .node-meta-line:hover { background:rgba(0,0,0,0.045); }
-  .node-meta-line:empty { padding:0; margin:0; min-height:0; }
+  .node-meta-line:empty { display:none; padding:0; margin:0; min-height:0; }
   .meta-date { font-size:11px; font-weight:600; color:var(--ink-soft); opacity:0.78; letter-spacing:0.2px; }
   .meta-note { font-size:11px; font-weight:500; color:var(--ink-soft); opacity:0.78; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.35; padding-top:4px; border-top:1px dashed var(--line); }
   .meta-note.no-divider { border-top:none; padding-top:0; }
@@ -742,11 +742,13 @@ function buildChainView(nodes) {
   function sizeFor(id) {
     const d = inDegree.get(id) || 0;
     const w = NODE_W;
-    const title = byId.get(id)?.title || "";
+    const node = byId.get(id);
+    const title = node?.title || "";
     const charsPerLine = Math.max(5, Math.floor((w - 34) / 11.5));
     const lines = Math.min(5, Math.max(1, Math.ceil((title.length + 2) / charsPerLine)));
-    const baseH = Math.max(NODE_H, 46 + lines * 19 + 16);
-    const h = Math.min(baseH + d * 30, 260);
+    const hasMeta = !!(node?.targetDate || node?.note || node?.status === "달성");
+    const baseH = 14 + lines * 18 + (hasMeta ? 18 : 0);
+    const h = Math.min(baseH + d * 16, 200);
     return { w, h };
   }
 
@@ -870,7 +872,8 @@ function buildChainView(nodes) {
     comp.forEach((id) => {
       const { w, h } = sizeFor(id);
       const x = TIMELINE_START + rank.get(id) * CHAIN_COL_W;
-      const y = rowY[rowOf.get(id)];
+      const r = rowOf.get(id);
+      const y = rowY[r] + (rowMaxH[r] - h) / 2;
       posOfReal.set(id, { x, y, w, h });
       placed.push({ ...byId.get(id), x, y, w, h });
     });
@@ -878,15 +881,51 @@ function buildChainView(nodes) {
     const dummyPos = new Map();
     dummyRank.forEach((r, id) => {
       const x = TIMELINE_START + r * CHAIN_COL_W + NODE_W / 2;
-      const y = rowY[rowOf.get(id)] + rowMaxH[rowOf.get(id)] / 2;
+      const rr = rowOf.get(id);
+      const y = rowY[rr] + rowMaxH[rr] / 2;
       dummyPos.set(id, { x, y });
     });
 
-    // Always leave from the vertical center of the right side and arrive at
-    // the vertical center of the left side — no corner-ish anchors, no
-    // per-edge side switching. Simple, predictable, always centered.
-    function rightCenter(box) { return { x: box.x + box.w, y: box.y + box.h / 2 }; }
-    function leftCenter(box) { return { x: box.x, y: box.y + box.h / 2 }; }
+    // When several arrows arrive at (or leave) the same card, converging them
+    // all on the exact center point makes them overlap and tangle near the
+    // card edge. Spread each edge's anchor along the card's height instead,
+    // ordered by where the other end of that edge sits vertically.
+    function otherEndY(chain, fromStart) {
+      if (chain.length > 2) {
+        const wp = fromStart ? dummyPos.get(chain[1]) : dummyPos.get(chain[chain.length - 2]);
+        if (wp) return wp.y;
+      }
+      const endId = fromStart ? chain[chain.length - 1] : chain[0];
+      const box = posOfReal.get(endId);
+      return box ? box.y + box.h / 2 : 0;
+    }
+    const outGroups = new Map(), inGroups = new Map();
+    for (const [key, chain] of edgeChainIds) {
+      const srcId = chain[0], tgtId = chain[chain.length - 1];
+      if (!outGroups.has(srcId)) outGroups.set(srcId, []);
+      outGroups.get(srcId).push({ key, sortY: otherEndY(chain, true) });
+      if (!inGroups.has(tgtId)) inGroups.set(tgtId, []);
+      inGroups.get(tgtId).push({ key, sortY: otherEndY(chain, false) });
+    }
+    function assignAnchors(groups, targetMap) {
+      groups.forEach((items, id) => {
+        const box = posOfReal.get(id);
+        if (!box) return;
+        const sorted = items.slice().sort((a, b) => a.sortY - b.sortY);
+        const n = sorted.length;
+        const margin = Math.min(14, box.h * 0.3);
+        const usable = Math.max(box.h - margin * 2, 0);
+        sorted.forEach((it, i) => {
+          const y = n <= 1 ? box.y + box.h / 2 : box.y + margin + (usable * i) / (n - 1);
+          targetMap.set(it.key, y);
+        });
+      });
+    }
+    const srcAnchorY = new Map(), tgtAnchorY = new Map();
+    assignAnchors(outGroups, srcAnchorY);
+    assignAnchors(inGroups, tgtAnchorY);
+    function rightAnchor(box, key) { return { x: box.x + box.w, y: srcAnchorY.get(key) ?? (box.y + box.h / 2) }; }
+    function leftAnchor(box, key) { return { x: box.x, y: tgtAnchorY.get(key) ?? (box.y + box.h / 2) }; }
 
     for (const [key, chain] of edgeChainIds) {
       edgeSides.set(key, { srcSide: "right", tgtSide: "left" });
@@ -896,8 +935,8 @@ function buildChainView(nodes) {
       const srcBox = posOfReal.get(chain[0]);
       const tgtBox = posOfReal.get(chain[chain.length - 1]);
       const pts = chain.map((id, idx) => {
-        if (idx === 0) return rightCenter(srcBox);
-        if (idx === chain.length - 1) return leftCenter(tgtBox);
+        if (idx === 0) return rightAnchor(srcBox, key);
+        if (idx === chain.length - 1) return leftAnchor(tgtBox, key);
         return dummyPos.get(id);
       });
       edgeWaypoints.set(key, pts);
