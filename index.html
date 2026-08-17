@@ -26,7 +26,26 @@
   a { color: inherit; }
   body { display:flex; flex-direction:column; }
   #topbar { flex-shrink:0; background:var(--chrome); border-bottom:1px solid var(--line); }
-  header { padding:14px 24px 12px; }
+  header { padding:14px 24px 10px; }
+  #topbar { position:relative; z-index:5; }
+  .title-row { display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .title-row .summary { margin-top:0; }
+  .tabs { display:flex; gap:2px; padding:0 20px; margin-bottom:-1px; }
+  .tab { position:relative; font-family:inherit; font-size:13px; color:var(--ink-soft); background:transparent;
+         border:1px solid transparent; border-bottom:none; border-radius:9px 9px 0 0; padding:7px 15px 9px; cursor:pointer; }
+  .tab:hover { color:var(--ink); background:var(--chrome-hover); }
+  .tab.active { background:var(--paper); color:var(--ink); font-weight:600; border-color:var(--line); box-shadow:inset 0 2px 0 var(--accent); }
+  aside .section .current-row { margin-top:0; }
+  aside .goal-chip { text-align:left; white-space:normal; max-width:100%; line-height:1.35; }
+  .board { display:none; gap:16px; padding:18px 24px 48px; align-items:flex-start; }
+  .board.show { display:flex; }
+  .board-col { width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
+  .board-col-head { display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
+                    padding:7px 4px 6px; border-bottom:2px solid currentColor; position:sticky; top:0;
+                    background:var(--paper); z-index:3; }
+  .board-col-count { margin-left:auto; font-size:11px; font-weight:500; opacity:0.7; }
+  .board-cards { display:flex; flex-direction:column; gap:10px; }
+  .board-col-empty { font-size:11.5px; color:var(--ink-soft); font-style:italic; padding:4px 4px; }
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
@@ -51,7 +70,7 @@
   .dot { width:8px; height:8px; border-radius:999px; flex-shrink:0; display:inline-block; }
   .filter-chip.period-chip { opacity:0.4; }
   .filter-chip.period-chip.active { opacity:1; border-color:var(--ink); background:var(--paper-hover); }
-  .node.node-flow { position:static; width:200px; }
+  .node.node-flow { position:relative; width:200px; }
   .singles-grid { display:none; flex-wrap:wrap; gap:10px; padding:16px 0 40px 24px; max-width:1500px; }
   .singles-grid.show { display:flex; }
   .singles-header { width:100%; font-size:12px; color:var(--ink-soft); margin-bottom:2px; }
@@ -185,15 +204,31 @@
 <body>
 <div id="topbar">
   <header>
-    <h1>인생 로드맵</h1>
-    <div class="summary" id="summary"></div>
-    <div class="current-row" id="current-row"></div>
+    <div class="title-row">
+      <h1>인생 로드맵</h1>
+      <div class="summary" id="summary"></div>
+      <div id="right-controls">
+        <button class="ctrl-btn primary-ctrl" id="new-goal-btn">+ 새 목표</button>
+        <button class="ctrl-btn active" id="statuscolor-btn">상태별 색칠</button>
+        <button class="ctrl-btn hidden" id="today-btn">오늘로 이동</button>
+      </div>
+    </div>
   </header>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-mode="sequence" title="선행·후속 관계를 따라 지금 순서대로">흐름 보기</button>
+    <button class="tab" data-mode="time" title="목표 시기를 연도별로">연도별 보기</button>
+    <button class="tab" data-mode="status" title="시작 전 · 진행 중 · 달성">상태별 보기</button>
+    <button class="tab" data-mode="category" title="8개 카테고리별로">카테고리별 보기</button>
+  </nav>
 </div>
 <div id="loading">불러오는 중이에요…</div>
 <div id="error" class="hidden"></div>
 <div class="layout hidden" id="app">
   <aside>
+    <div class="section">
+      <div class="section-title">요즘 목표</div>
+      <div class="current-row" id="current-row"></div>
+    </div>
     <div class="section">
       <div class="section-title">검색</div>
       <input id="search" placeholder="목표 이름 검색">
@@ -218,6 +253,7 @@
         <div class="tick-row" id="tick-row"></div>
         <div class="canvas" id="canvas"></div>
         <div class="singles-grid" id="singles-grid"></div>
+        <div class="board" id="board"></div>
       </div>
     </div>
   </div>
@@ -550,16 +586,10 @@ function renderStatic() {
     <span>진행 중 <b>${active.filter(n => n.status === "진행 중").length}</b></span>
     <span>시작 전 <b>${active.filter(n => n.status === "시작 전").length}</b></span>
   `;
-  document.getElementById("current-row").innerHTML = `
-    <span style="font-size:12px;color:var(--ink-soft)">요즘 목표:</span>
-    ${currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("") || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>'}
-    <div id="right-controls">
-      <button class="ctrl-btn primary-ctrl" id="new-goal-btn">+ 새 목표</button>
-      <button class="ctrl-btn${STATUS_COLOR_MODE ? " active" : ""}" id="statuscolor-btn">상태별 색칠</button>
-      <button class="ctrl-btn" id="mode-btn"></button>
-      <button class="ctrl-btn" id="today-btn">오늘로 이동</button>
-    </div>
-  `;
+  document.getElementById("current-row").innerHTML =
+    currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("")
+    || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>';
+  document.getElementById("statuscolor-btn").classList.toggle("active", STATUS_COLOR_MODE);
 
   const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
   document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
@@ -581,10 +611,15 @@ function renderStatic() {
 
   document.querySelectorAll(".status-cb, .cat-cb").forEach(cb => cb.addEventListener("change", () => rerenderCanvas()));
   document.getElementById("search").addEventListener("input", () => rerenderCanvas());
-  document.getElementById("mode-btn").addEventListener("click", () => {
-    VIEW_MODE = VIEW_MODE === "time" ? "sequence" : "time";
+  document.querySelectorAll("#tabs .tab").forEach(btn => btn.addEventListener("click", () => {
+    if (VIEW_MODE === btn.dataset.mode) return;
+    VIEW_MODE = btn.dataset.mode;
+    document.getElementById("timeline-scroll").scrollTo({ left: 0 });
+    document.querySelector(".lane-labels-wrap").scrollTo({ top: 0 });
+    clearHighlight();
     rerenderCanvas();
-  });
+  }));
+  document.getElementById("today-btn").addEventListener("click", goToday);
   document.getElementById("statuscolor-btn").addEventListener("click", (e) => {
     STATUS_COLOR_MODE = !STATUS_COLOR_MODE;
     e.target.classList.toggle("active", STATUS_COLOR_MODE);
@@ -599,13 +634,30 @@ function rerenderCanvas() {
   const f = getFilterState();
   const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
 
-  const modeBtn = document.getElementById("mode-btn");
-  if (modeBtn) modeBtn.textContent = VIEW_MODE === "time" ? "순서대로 보기" : "연도별 보기";
+  document.querySelectorAll("#tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.mode === VIEW_MODE));
+  const todayBtn = document.getElementById("today-btn");
+  if (todayBtn) todayBtn.classList.toggle("hidden", VIEW_MODE !== "time");
 
   const laneLabelsEl = document.getElementById("lane-labels");
   const singlesEl = document.getElementById("singles-grid");
+  const boardEl = document.getElementById("board");
+  const isBoard = VIEW_MODE === "status" || VIEW_MODE === "category";
 
-  if (VIEW_MODE === "sequence") {
+  boardEl.classList.toggle("show", isBoard);
+  if (!isBoard) boardEl.innerHTML = "";
+
+  if (isBoard) {
+    laneLabelsEl.style.display = "none";
+    laneLabelsEl.innerHTML = "";
+    singlesEl.classList.remove("show");
+    singlesEl.innerHTML = "";
+    resetTickRow();
+    const canvasEl = document.getElementById("canvas");
+    canvasEl.style.width = "";
+    canvasEl.style.height = "0px";
+    canvasEl.innerHTML = "";
+    renderBoardMode(filtered, VIEW_MODE);
+  } else if (VIEW_MODE === "sequence") {
     laneLabelsEl.style.display = "none";
     renderSequenceMode(filtered);
   } else {
@@ -614,6 +666,59 @@ function rerenderCanvas() {
     singlesEl.innerHTML = "";
     renderTimeMode(filtered);
   }
+}
+
+function resetTickRow() {
+  const tickRow = document.getElementById("tick-row");
+  tickRow.style.width = "100%";
+  tickRow.style.height = "0px";
+  tickRow.style.borderBottom = "none";
+  tickRow.innerHTML = "";
+}
+
+// 상태별 / 카테고리별 보기 — 컬럼(보드) 레이아웃.
+function renderBoardMode(filtered, groupBy) {
+  const groups = [];
+  if (groupBy === "status") {
+    for (const [key, meta] of Object.entries(STATUS_META)) {
+      groups.push({
+        key, label: meta.label, fg: meta.fg, bg: meta.bg, icon: STATUS_ICONS[key] || "",
+        nodes: filtered.filter(n => n.status === key),
+      });
+    }
+  } else {
+    for (const key of CATEGORY_ORDER) {
+      const meta = CATEGORY_META[key];
+      const nodes = filtered.filter(n => (n.categories[0] ?? "__NONE__") === key);
+      if (!nodes.length) continue;
+      groups.push({ key, label: `${meta.emoji} ${meta.label}`, fg: meta.fg, bg: meta.bg, icon: "", nodes });
+    }
+  }
+
+  for (const g of groups) {
+    // 달성 목표는 최근 순, 나머지는 기한이 가까운 순(미정은 뒤로).
+    g.nodes.sort((a, b) => g.key === "달성"
+      ? (b.targetDate ?? "").localeCompare(a.targetDate ?? "")
+      : (a.targetDate || "9999-99-99").localeCompare(b.targetDate || "9999-99-99"));
+  }
+
+  FULL_ORDER = groups.flatMap(g => g.nodes.map(n => n.id));
+
+  document.getElementById("board").innerHTML = groups.map(g => `
+    <div class="board-col">
+      <div class="board-col-head" style="color:${g.fg};border-bottom-color:${g.fg}">
+        ${g.icon ? `<span class="status-chip" style="background:${g.bg};color:${g.fg}">${g.icon}</span>` : ""}
+        <span>${esc(g.label)}</span>
+        <span class="board-col-count">${g.nodes.length}</span>
+      </div>
+      <div class="board-cards">
+        ${g.nodes.length
+          ? g.nodes.map(n => renderNodeDiv({ ...n, flow: true }, null, null)).join("")
+          : '<div class="board-col-empty">없음</div>'}
+      </div>
+    </div>`).join("");
+
+  wireCanvasInteractions();
 }
 
 function renderTimeMode(filtered) {
@@ -981,11 +1086,7 @@ function renderSequenceMode(filtered) {
   const nodeById = new Map(view.placed.map(n => [n.id, n]));
   FULL_ORDER = [...view.placed.map(n => n.id), ...view.singles.map(n => n.id)];
 
-  const tickRow = document.getElementById("tick-row");
-  tickRow.style.width = "100%";
-  tickRow.style.height = "0px";
-  tickRow.style.borderBottom = "none";
-  tickRow.innerHTML = "";
+  resetTickRow();
 
   const edgePaths = view.seqEdges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
     const key = e.source + "->" + e.target;
@@ -1068,9 +1169,6 @@ function wireCanvasInteractions() {
   });
 
   wireMetaLineEditing();
-
-  const todayBtn = document.getElementById("today-btn");
-  if (todayBtn) todayBtn.addEventListener("click", goToday);
 }
 
 let GLOBAL_LISTENERS_WIRED = false;
