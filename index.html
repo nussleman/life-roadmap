@@ -37,15 +37,59 @@
   .tab.active { background:var(--paper); color:var(--ink); font-weight:600; border-color:var(--line); box-shadow:inset 0 2px 0 var(--accent); }
   aside .section .current-row { margin-top:0; }
   aside .goal-chip { text-align:left; white-space:normal; max-width:100%; line-height:1.35; }
-  .board { display:none; gap:16px; padding:18px 24px 48px; align-items:flex-start; }
+  .board { display:none; gap:18px; padding:16px 24px 60px; align-items:flex-start; }
   .board.show { display:flex; }
-  .board-col { width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
+  .board-col { display:flex; flex-direction:column; gap:10px;
+               flex:var(--cols,1) 0 auto; min-width:calc(var(--cols,1) * 132px + (var(--cols,1) - 1) * 10px);
+               border-radius:10px; padding:0 6px 8px; border:1px solid transparent; }
+  .board-col.drop-over { border-color:var(--accent); background:rgba(168,103,42,0.07); }
   .board-col-head { display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
-                    padding:7px 4px 6px; border-bottom:2px solid currentColor; position:sticky; top:0;
+                    padding:8px 4px 6px; border-bottom:2px solid currentColor; position:sticky; top:0;
                     background:var(--paper); z-index:3; }
   .board-col-count { margin-left:auto; font-size:11px; font-weight:500; opacity:0.7; }
-  .board-cards { display:flex; flex-direction:column; gap:10px; }
-  .board-col-empty { font-size:11.5px; color:var(--ink-soft); font-style:italic; padding:4px 4px; }
+  .board-cards { display:grid; grid-template-columns:repeat(var(--cols,1), minmax(0,1fr)); gap:10px; align-content:start; }
+  .board-cards .node.node-flow { width:auto; }
+  .board-col-empty { grid-column:1/-1; font-size:11.5px; color:var(--ink-soft); font-style:italic; padding:4px 4px; }
+  .node.dragging { opacity:0.4; }
+  .board.dnd-on .node { cursor:grab; }
+  .board.dnd-on .node:hover .node-extra { opacity:0; visibility:hidden; }
+  #toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(10px);
+           background:var(--ink); color:var(--paper); font-size:12.5px; padding:8px 16px; border-radius:999px;
+           opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; z-index:200; }
+  #toast.show { opacity:0.94; transform:translateX(-50%) translateY(0); }
+  #toast.err { background:var(--warn); }
+  /* 요즘 목표 뷰 */
+  .current-view { display:none; flex-direction:column; width:100%; max-width:1060px; margin:0 auto; padding:34px 28px 70px; }
+  .current-view.show { display:flex; }
+  .cv-head { text-align:center; font-family:"Fraunces",serif; font-size:15px; color:var(--ink-soft); letter-spacing:0.3px; }
+  .hero-wrap { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; padding:22px 0 44px; }
+  .hero-card { width:286px; display:flex; flex-direction:column; gap:9px; padding:16px 18px 14px;
+               border-radius:14px; background:var(--hero-bg,var(--paper-raised)); border:1px solid var(--hero-fg);
+               box-shadow:0 3px 10px rgba(0,0,0,0.07), 0 0 20px rgba(255,152,20,0.14); }
+  .hero-img { height:104px; border-radius:9px; object-fit:cover; width:100%; background:var(--paper-hover); }
+  .hero-top { display:flex; align-items:center; gap:6px; font-size:11px; }
+  .hero-status { margin-left:auto; font-weight:600; }
+  .hero-title { font-family:"Fraunces",serif; font-size:19px; line-height:1.32; color:var(--ink); }
+  .hero-date { font-size:11.5px; font-weight:600; color:var(--ink-soft); }
+  .hero-note { font-size:11.5px; color:var(--ink-soft); line-height:1.4; }
+  .hero-actions { display:flex; gap:6px; margin-top:4px; }
+  .hero-actions button { font-size:11.5px; font-family:inherit; border:1px solid var(--line); background:var(--paper);
+                         color:var(--ink-soft); border-radius:6px; padding:4px 9px; cursor:pointer; }
+  .hero-actions button:hover { background:var(--paper-hover); color:var(--ink); }
+  .cv-empty { text-align:center; font-size:13px; color:var(--ink-soft); padding:26px 0 40px; font-style:italic; }
+  .wait-section { border-top:1px solid var(--line); padding-top:18px; }
+  .wait-head { display:flex; align-items:baseline; gap:10px; }
+  .wait-head h3 { font-family:"Fraunces",serif; font-weight:500; font-size:14px; margin:0; }
+  .wait-hint { font-size:11.5px; color:var(--ink-soft); }
+  .wait-sub { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); margin:16px 0 8px; }
+  .wait-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:8px; }
+  .wait-card { display:flex; align-items:center; gap:7px; text-align:left; font-family:inherit; font-size:12.5px;
+               color:var(--ink); border:1px solid var(--line); background:var(--paper-raised); border-radius:9px;
+               padding:8px 10px; cursor:pointer; }
+  .wait-card:hover { background:var(--paper-hover); border-color:var(--accent); }
+  .wait-card .wt { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .wait-card .wd { font-size:10.5px; color:var(--ink-soft); flex-shrink:0; }
+  .wait-card .wr { flex-shrink:0; }
   .summary { display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .summary b { color:var(--ink); font-weight:500; }
   .current-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
@@ -210,25 +254,22 @@
       <div id="right-controls">
         <button class="ctrl-btn primary-ctrl" id="new-goal-btn">+ 새 목표</button>
         <button class="ctrl-btn active" id="statuscolor-btn">상태별 색칠</button>
-        <button class="ctrl-btn hidden" id="today-btn">오늘로 이동</button>
       </div>
     </div>
   </header>
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-mode="sequence" title="선행·후속 관계를 따라 지금 순서대로">흐름 보기</button>
-    <button class="tab" data-mode="time" title="목표 시기를 연도별로">연도별 보기</button>
+    <button class="tab active" data-mode="current" title="지금 붙잡고 있는 목표들">요즘 목표</button>
+    <button class="tab" data-mode="sequence" title="선행·후속 관계를 따라 지금 순서대로">흐름 보기</button>
+    <button class="tab" data-mode="year" title="목표 시기를 연도별로">연도별 보기</button>
     <button class="tab" data-mode="status" title="시작 전 · 진행 중 · 달성">상태별 보기</button>
-    <button class="tab" data-mode="category" title="8개 카테고리별로">카테고리별 보기</button>
+    <button class="tab" data-mode="category" title="카테고리별로">카테고리별 보기</button>
   </nav>
 </div>
+<div id="toast"></div>
 <div id="loading">불러오는 중이에요…</div>
 <div id="error" class="hidden"></div>
 <div class="layout hidden" id="app">
   <aside>
-    <div class="section">
-      <div class="section-title">요즘 목표</div>
-      <div class="current-row" id="current-row"></div>
-    </div>
     <div class="section">
       <div class="section-title">검색</div>
       <input id="search" placeholder="목표 이름 검색">
@@ -254,6 +295,7 @@
         <div class="canvas" id="canvas"></div>
         <div class="singles-grid" id="singles-grid"></div>
         <div class="board" id="board"></div>
+        <div class="current-view" id="current-view"></div>
       </div>
     </div>
   </div>
@@ -325,7 +367,8 @@ function monthsIndex(dateStr) {
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let GRAPH = null;
-let VIEW_MODE = "sequence";
+let VIEW_MODE = "current";
+let DRAG_ID = null;
 let ACTIVE_PERIOD = null;
 let STATUS_COLOR_MODE = true;
 let FULL_ORDER = [];
@@ -403,69 +446,6 @@ async function load() {
 function yearOf(dateStr) {
   if (!dateStr) return null;
   return parseInt(dateStr.slice(0, 4), 10);
-}
-
-function buildLayout(nodes) {
-  const dated = nodes.filter(n => n.targetDate);
-  const years = Array.from(new Set(dated.map(n => yearOf(n.targetDate)))).sort((a, b) => a - b);
-  const hasTBD = nodes.some(n => !n.targetDate);
-  const colKeys = [...years, ...(hasTBD ? ["TBD"] : [])];
-  if (colKeys.length === 0) colKeys.push(new Date().getFullYear());
-
-  const colIndex = new Map(colKeys.map((k, i) => [k, i]));
-  const colX = (key) => TIMELINE_START + colIndex.get(key) * YEAR_COL_W;
-  const subX = (key, subcol) => colX(key) + YEAR_COL_PAD + subcol * (NODE_W + YEAR_SUBCOL_GAP);
-
-  const todayYear = new Date().getFullYear();
-  const todayX = colIndex.has(todayYear) ? colX(todayYear) + YEAR_COL_W / 2 : null;
-  const tbdX = hasTBD ? colX("TBD") + YEAR_COL_W / 2 : null;
-
-  const byLane = new Map(CATEGORY_ORDER.map(c => [c, []]));
-  for (const n of nodes) {
-    const primary = n.categories[0] ?? "__NONE__";
-    const lane = byLane.has(primary) ? primary : "__NONE__";
-    byLane.get(lane).push(n);
-  }
-
-  const lanes = [];
-  let cursorY = CANVAS_TOP_GAP;
-  for (const cat of CATEGORY_ORDER) {
-    const laneNodes = byLane.get(cat);
-    if (!laneNodes.length) continue;
-    const byCol = new Map();
-    for (const n of laneNodes) {
-      const key = n.targetDate ? yearOf(n.targetDate) : "TBD";
-      if (!byCol.has(key)) byCol.set(key, []);
-      byCol.get(key).push(n);
-    }
-    for (const arr of byCol.values()) {
-      arr.sort((a, b) => (a.targetDate ?? "").localeCompare(b.targetDate ?? "") || a.title.localeCompare(b.title, "ko"));
-    }
-    let maxRows = 1;
-    const placed = [];
-    for (const [key, arr] of byCol) {
-      arr.forEach((n, idx) => {
-        const subcol = idx % 2, subrow = Math.floor(idx / 2);
-        maxRows = Math.max(maxRows, subrow + 1);
-        const overdue = n.status === "시작 전" && n.targetDate && n.targetDate < todayStr();
-        placed.push({ ...n, x: subX(key, subcol), subrow, overdue });
-      });
-    }
-    const laneHeight = maxRows * (NODE_H + ROW_GAP) + LANE_PAD * 2;
-    for (const p of placed) p.y = cursorY + LANE_PAD + p.subrow * (NODE_H + ROW_GAP);
-    lanes.push({ cat, y: cursorY, height: laneHeight, nodes: placed });
-    cursorY += laneHeight + 4;
-  }
-
-  const totalWidth = colKeys.length * YEAR_COL_W + TIMELINE_START + 40;
-  const colTicks = colKeys.map(key => ({
-    x: colX(key) + YEAR_COL_W / 2,
-    left: colX(key),
-    label: key === "TBD" ? "날짜 미정" : `${key}년`,
-    isTBD: key === "TBD",
-  }));
-
-  return { lanes, totalWidth, totalHeight: cursorY + 20, todayX, tbdX, colTicks };
 }
 
 function edgePathD(x1, y1, x2, y2) {
@@ -578,7 +558,6 @@ function renderStatic() {
   const nodes = GRAPH.nodes;
   const achieved = nodes.filter(n => n.status === "달성").sort((a, b) => (b.targetDate ?? "").localeCompare(a.targetDate ?? ""));
   const active = nodes.filter(n => n.status !== "달성");
-  const currentGoals = nodes.filter(n => n.current);
 
   document.getElementById("summary").innerHTML = `
     <span>전체 <b>${nodes.length}개</b></span>
@@ -586,24 +565,29 @@ function renderStatic() {
     <span>진행 중 <b>${active.filter(n => n.status === "진행 중").length}</b></span>
     <span>시작 전 <b>${active.filter(n => n.status === "시작 전").length}</b></span>
   `;
-  document.getElementById("current-row").innerHTML =
-    currentGoals.map(n => `<button class="goal-chip" data-goto="${esc(n.id)}">${esc(n.title)}</button>`).join("")
-    || '<span style="font-size:12px;color:var(--ink-soft)">없음</span>';
   document.getElementById("statuscolor-btn").classList.toggle("active", STATUS_COLOR_MODE);
 
-  const presentCats = CATEGORY_ORDER.filter(c => active.some(n => (n.categories[0] ?? "__NONE__") === c));
+  // 다시 불러와도 켜둔 필터가 초기화되지 않게 이전 선택을 기억해요.
+  const prevStatuses = document.querySelectorAll(".status-cb").length
+    ? new Set(Array.from(document.querySelectorAll(".status-cb")).filter(c => c.checked).map(c => c.value)) : null;
+  const prevCats = document.querySelectorAll(".cat-cb").length
+    ? new Set(Array.from(document.querySelectorAll(".cat-cb")).filter(c => c.checked).map(c => c.value)) : null;
+
+  // 달성만 있는 카테고리도 필터에 남겨둬야 연도별/상태별 보기에서 사라지지 않아요.
+  const presentCats = CATEGORY_ORDER.filter(c => nodes.some(n => (n.categories[0] ?? "__NONE__") === c));
   document.getElementById("status-filters").innerHTML = Object.entries(STATUS_META).map(([key, meta]) =>
-    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}" checked><span class="status-chip" style="background:${meta.bg};color:${meta.fg}">${STATUS_ICONS[key]}</span> ${meta.label}</label>`
+    `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="status-cb" value="${esc(key)}"${!prevStatuses || prevStatuses.has(key) ? " checked" : ""}><span class="status-chip" style="background:${meta.bg};color:${meta.fg}">${STATUS_ICONS[key]}</span> ${meta.label}</label>`
   ).join("");
   document.getElementById("category-filters").innerHTML = presentCats.map((c) => {
     const meta = CATEGORY_META[c];
-    return `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="cat-cb" value="${esc(c)}" checked>${meta.emoji} ${esc(meta.label)}</label>`;
+    return `<label class="filter-chip" style="--chip-fg:${meta.fg};--chip-bg:${meta.bg}"><input type="checkbox" class="cat-cb" value="${esc(c)}"${!prevCats || prevCats.has(c) ? " checked" : ""}>${meta.emoji} ${esc(meta.label)}</label>`;
   }).join("");
 
   const periods = computePeriods();
   document.getElementById("period-select").innerHTML =
     `<option value="">전체</option>` +
     periods.map(p => `<option value="${esc(p)}">${esc(periodLabel(p))}</option>`).join("");
+  if (ACTIVE_PERIOD) document.getElementById("period-select").value = ACTIVE_PERIOD;
   document.getElementById("period-select").addEventListener("change", (e) => {
     ACTIVE_PERIOD = e.target.value || null;
     rerenderCanvas();
@@ -614,12 +598,11 @@ function renderStatic() {
   document.querySelectorAll("#tabs .tab").forEach(btn => btn.addEventListener("click", () => {
     if (VIEW_MODE === btn.dataset.mode) return;
     VIEW_MODE = btn.dataset.mode;
-    document.getElementById("timeline-scroll").scrollTo({ left: 0 });
-    document.querySelector(".lane-labels-wrap").scrollTo({ top: 0 });
+    document.getElementById("timeline-scroll").scrollTo?.({ left: 0 });
+    document.querySelector(".lane-labels-wrap").scrollTo?.({ top: 0 });
     clearHighlight();
     rerenderCanvas();
   }));
-  document.getElementById("today-btn").addEventListener("click", goToday);
   document.getElementById("statuscolor-btn").addEventListener("click", (e) => {
     STATUS_COLOR_MODE = !STATUS_COLOR_MODE;
     e.target.classList.toggle("active", STATUS_COLOR_MODE);
@@ -635,37 +618,37 @@ function rerenderCanvas() {
   const filtered = GRAPH.nodes.filter(n => passesFilter(n, f));
 
   document.querySelectorAll("#tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.mode === VIEW_MODE));
-  const todayBtn = document.getElementById("today-btn");
-  if (todayBtn) todayBtn.classList.toggle("hidden", VIEW_MODE !== "time");
 
   const laneLabelsEl = document.getElementById("lane-labels");
   const singlesEl = document.getElementById("singles-grid");
   const boardEl = document.getElementById("board");
-  const isBoard = VIEW_MODE === "status" || VIEW_MODE === "category";
+  const currentEl = document.getElementById("current-view");
+  const canvasEl = document.getElementById("canvas");
 
+  laneLabelsEl.style.display = "none";
+  laneLabelsEl.innerHTML = "";
+
+  const isBoard = VIEW_MODE === "status" || VIEW_MODE === "category" || VIEW_MODE === "year";
+  const isCurrent = VIEW_MODE === "current";
   boardEl.classList.toggle("show", isBoard);
-  if (!isBoard) boardEl.innerHTML = "";
+  currentEl.classList.toggle("show", isCurrent);
+  if (!isBoard) { boardEl.innerHTML = ""; boardEl.classList.remove("dnd-on"); }
+  if (!isCurrent) currentEl.innerHTML = "";
 
-  if (isBoard) {
-    laneLabelsEl.style.display = "none";
-    laneLabelsEl.innerHTML = "";
-    singlesEl.classList.remove("show");
-    singlesEl.innerHTML = "";
-    resetTickRow();
-    const canvasEl = document.getElementById("canvas");
-    canvasEl.style.width = "";
-    canvasEl.style.height = "0px";
-    canvasEl.innerHTML = "";
-    renderBoardMode(filtered, VIEW_MODE);
-  } else if (VIEW_MODE === "sequence") {
-    laneLabelsEl.style.display = "none";
+  if (VIEW_MODE === "sequence") {
     renderSequenceMode(filtered);
-  } else {
-    laneLabelsEl.style.display = "";
-    singlesEl.classList.remove("show");
-    singlesEl.innerHTML = "";
-    renderTimeMode(filtered);
+    return;
   }
+
+  singlesEl.classList.remove("show");
+  singlesEl.innerHTML = "";
+  resetTickRow();
+  canvasEl.style.width = "";
+  canvasEl.style.height = "0px";
+  canvasEl.innerHTML = "";
+
+  if (isBoard) renderBoardMode(filtered, VIEW_MODE);
+  else renderCurrentView(filtered);
 }
 
 function resetTickRow() {
@@ -676,8 +659,8 @@ function resetTickRow() {
   tickRow.innerHTML = "";
 }
 
-// 상태별 / 카테고리별 보기 — 컬럼(보드) 레이아웃.
-function renderBoardMode(filtered, groupBy) {
+// 상태별 / 카테고리별 / 연도별 보기 — 컬럼(보드) 레이아웃 + 드래그 이동.
+function boardGroups(filtered, groupBy) {
   const groups = [];
   if (groupBy === "status") {
     for (const [key, meta] of Object.entries(STATUS_META)) {
@@ -686,26 +669,51 @@ function renderBoardMode(filtered, groupBy) {
         nodes: filtered.filter(n => n.status === key),
       });
     }
-  } else {
+  } else if (groupBy === "category") {
     for (const key of CATEGORY_ORDER) {
       const meta = CATEGORY_META[key];
       const nodes = filtered.filter(n => (n.categories[0] ?? "__NONE__") === key);
-      if (!nodes.length) continue;
+      if (!nodes.length && key === "__NONE__") continue;
       groups.push({ key, label: `${meta.emoji} ${meta.label}`, fg: meta.fg, bg: meta.bg, icon: "", nodes });
     }
+  } else {
+    const thisYear = new Date().getFullYear();
+    const years = Array.from(new Set(filtered.filter(n => n.targetDate).map(n => yearOf(n.targetDate)))).sort((a, b) => a - b);
+    if (!years.includes(thisYear)) years.push(thisYear);
+    years.sort((a, b) => a - b);
+    for (const y of years) {
+      const isNow = y === thisYear;
+      groups.push({
+        key: String(y), label: `${y}년${isNow ? " · 올해" : ""}`,
+        fg: isNow ? "#a8672a" : "#6d5c40", bg: "#efe3c8", icon: "",
+        nodes: filtered.filter(n => yearOf(n.targetDate) === y),
+      });
+    }
+    groups.push({
+      key: "TBD", label: "시기 미정", fg: "#7d6c53", bg: "#e8ddc6", icon: "",
+      nodes: filtered.filter(n => !n.targetDate),
+    });
   }
-
   for (const g of groups) {
-    // 달성 목표는 최근 순, 나머지는 기한이 가까운 순(미정은 뒤로).
     g.nodes.sort((a, b) => g.key === "달성"
       ? (b.targetDate ?? "").localeCompare(a.targetDate ?? "")
-      : (a.targetDate || "9999-99-99").localeCompare(b.targetDate || "9999-99-99"));
+      : (a.targetDate || "9999-99-99").localeCompare(b.targetDate || "9999-99-99") || a.title.localeCompare(b.title, "ko"));
   }
+  return groups;
+}
 
+function renderBoardMode(filtered, groupBy) {
+  const groups = boardGroups(filtered, groupBy);
   FULL_ORDER = groups.flatMap(g => g.nodes.map(n => n.id));
 
+  // 남는 가로 공간에 맞춰 컬럼 안에서 카드를 몇 줄로 깔지 계산해요.
+  const avail = Math.max(340, (document.getElementById("timeline-scroll").clientWidth || 1100) - 48 - (groups.length - 1) * 18);
+  let cols = Math.max(1, Math.floor(avail / Math.max(1, groups.length) / 178));
+  if (groupBy === "status") cols = Math.max(3, cols);
+  cols = Math.min(cols, 4);
+
   document.getElementById("board").innerHTML = groups.map(g => `
-    <div class="board-col">
+    <div class="board-col" data-col="${esc(g.key)}" style="--cols:${cols}">
       <div class="board-col-head" style="color:${g.fg};border-bottom-color:${g.fg}">
         ${g.icon ? `<span class="status-chip" style="background:${g.bg};color:${g.fg}">${g.icon}</span>` : ""}
         <span>${esc(g.label)}</span>
@@ -719,64 +727,212 @@ function renderBoardMode(filtered, groupBy) {
     </div>`).join("");
 
   wireCanvasInteractions();
+  wireBoardDnd(groupBy);
 }
 
-function renderTimeMode(filtered) {
-  const layout = buildLayout(filtered);
-  const nodeById = new Map();
-  for (const lane of layout.lanes) for (const n of lane.nodes) nodeById.set(n.id, n);
-  FULL_ORDER = layout.lanes.flatMap(l => l.nodes.map(n => n.id));
+function wireBoardDnd(groupBy) {
+  const boardEl = document.getElementById("board");
+  boardEl.querySelectorAll(".node").forEach((el) => {
+    el.draggable = true;
+    // 카드 안의 입력/버튼을 누를 때는 드래그가 걸리지 않도록.
+    el.addEventListener("mousedown", (e) => {
+      el.draggable = !e.target.closest("input, textarea, button, .node-extra, .node-meta-line");
+    });
+    el.addEventListener("dragstart", (e) => {
+      DRAG_ID = el.dataset.id;
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", el.dataset.id);
+      el.classList.add("dragging");
+      boardEl.classList.add("dnd-on");
+    });
+    el.addEventListener("dragend", () => {
+      el.classList.remove("dragging");
+      boardEl.classList.remove("dnd-on");
+      boardEl.querySelectorAll(".board-col.drop-over").forEach(c => c.classList.remove("drop-over"));
+      DRAG_ID = null;
+    });
+  });
 
-  document.getElementById("lane-labels").style.height = layout.totalHeight + "px";
-  document.getElementById("lane-labels").innerHTML = layout.lanes.map((lane) => {
-    const meta = CATEGORY_META[lane.cat];
-    return `<div class="lane-label" style="top:${lane.y}px;height:${lane.height}px;border-left:3px solid ${meta.fg}">
-      <span style="color:${meta.fg}">${meta.emoji} ${esc(meta.label)}</span>
-      <span class="lane-count">${lane.nodes.length}</span>
+  boardEl.querySelectorAll(".board-col").forEach((col) => {
+    col.addEventListener("dragover", (e) => {
+      if (!DRAG_ID) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      col.classList.add("drop-over");
+    });
+    col.addEventListener("dragleave", (e) => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove("drop-over");
+    });
+    col.addEventListener("drop", (e) => {
+      e.preventDefault();
+      col.classList.remove("drop-over");
+      const id = DRAG_ID || e.dataTransfer.getData("text/plain");
+      if (id) applyBoardDrop(id, col.dataset.col, groupBy);
+    });
+  });
+}
+
+function recomputeOverdue(n) {
+  n.overdue = !!n.targetDate && n.status !== "달성" && n.targetDate < todayStr();
+}
+
+function shiftYear(dateStr, year) {
+  if (!dateStr) return `${year}-12-31`;
+  return `${year}-${dateStr.slice(5)}`;
+}
+
+async function patchGoal(id, payload) {
+  const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(id), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+let TOAST_TIMER = null;
+function toast(msg, isErr) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.toggle("err", !!isErr);
+  el.classList.add("show");
+  clearTimeout(TOAST_TIMER);
+  TOAST_TIMER = setTimeout(() => el.classList.remove("show"), isErr ? 4000 : 1600);
+}
+
+async function applyBoardDrop(id, colKey, groupBy) {
+  const n = GRAPH.nodes.find(x => x.id === id);
+  if (!n) return;
+  let payload, before, reload = false;
+
+  if (groupBy === "status") {
+    if (n.status === colKey) return;
+    before = { status: n.status };
+    payload = { status: colKey };
+    n.status = colKey;
+  } else if (groupBy === "category") {
+    const cur = n.categories || [];
+    if ((cur[0] ?? "__NONE__") === colKey) return;
+    const next = colKey === "__NONE__" ? [] : [colKey, ...cur.filter(c => c !== colKey)];
+    before = { categories: cur };
+    payload = { categories: next };
+    n.categories = next;
+    reload = true;
+  } else {
+    const next = colKey === "TBD" ? null : shiftYear(n.targetDate, parseInt(colKey, 10));
+    if ((n.targetDate || null) === next) return;
+    before = { targetDate: n.targetDate };
+    payload = { targetDate: next };
+    n.targetDate = next;
+  }
+  recomputeOverdue(n);
+  rerenderCanvas();
+
+  try {
+    await patchGoal(id, payload);
+    toast("옮겼어요");
+    if (reload) load();
+  } catch (err) {
+    Object.assign(n, before);
+    recomputeOverdue(n);
+    rerenderCanvas();
+    toast("저장 실패: " + err.message, true);
+  }
+}
+
+// 요즘 목표 뷰 — 위에 요즘 목표, 아래에 올릴 수 있는 대기 목록.
+function isReadyToStart(n) {
+  const preds = n.predecessors || [];
+  if (!preds.length) return true;
+  return preds.every(pid => GRAPH.nodes.find(x => x.id === pid)?.status === "달성");
+}
+
+function renderCurrentView(filtered) {
+  const currents = filtered.filter(n => n.current);
+  const byDate = (a, b) => (a.targetDate || "9999-99-99").localeCompare(b.targetDate || "9999-99-99");
+  currents.sort(byDate);
+  const running = filtered.filter(n => !n.current && n.status === "진행 중").sort(byDate);
+  const waiting = filtered.filter(n => !n.current && n.status === "시작 전")
+    .sort((a, b) => (isReadyToStart(b) - isReadyToStart(a)) || byDate(a, b));
+
+  FULL_ORDER = [...currents.map(n => n.id), ...running.map(n => n.id), ...waiting.map(n => n.id)];
+
+  const heroCard = (n) => {
+    const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
+    const st = STATUS_META[n.status];
+    const img = (Array.isArray(n.images) && n.images.length) ? `<img class="hero-img" src="${esc(n.images[0])}" loading="lazy" alt="">` : "";
+    return `<div class="hero-card" data-id="${esc(n.id)}" style="--hero-bg:${cat.bgFaint};--hero-fg:${cat.fg}66">
+      ${img}
+      <div class="hero-top">
+        <span class="cat-tag" style="color:${cat.fg};background:${cat.bg}">${cat.emoji} ${esc(cat.label)}</span>
+        <span class="hero-status" style="color:${st.fg}">${esc(st.label)}</span>
+      </div>
+      <div class="hero-title">${n.icon ? esc(n.icon) + " " : ""}${esc(n.title)}</div>
+      ${n.targetDate ? `<div class="hero-date"${n.overdue ? ' style="color:var(--warn)"' : ""}>${esc(formatPeriodKorean(n.targetDate))}${n.overdue ? " · 기한 지남" : ""}</div>` : `<div class="hero-date" style="opacity:0.6">시기 미정</div>`}
+      ${n.note ? `<div class="hero-note">${esc(n.note)}</div>` : ""}
+      <div class="hero-actions">
+        <button data-open="${esc(n.id)}">자세히</button>
+        <button data-demote="${esc(n.id)}">내려놓기</button>
+      </div>
     </div>`;
-  }).join("");
+  };
 
-  const tickRow = document.getElementById("tick-row");
-  tickRow.style.width = layout.totalWidth + "px";
-  tickRow.style.height = "26px";
-  tickRow.style.borderBottom = "1px solid var(--line)";
-  tickRow.innerHTML =
-    layout.colTicks.map(t => `<div class="${t.isTBD ? "tbd-label" : "tick"}" style="left:${t.x}px;transform:translateX(-50%);">${esc(t.label)}</div>`).join("") +
-    (layout.todayX != null ? `<div class="today-label" style="left:${layout.todayX}px;transform:translateX(-50%);">오늘</div>` : "");
+  const waitCard = (n) => {
+    const cat = CATEGORY_META[n.categories[0] ?? "__NONE__"];
+    const ready = n.status === "시작 전" && isReadyToStart(n);
+    return `<button class="wait-card" data-promote="${esc(n.id)}" title="요즘 목표로 올리기">
+      <span class="wr">${n.icon || cat.emoji}</span>
+      <span class="wt">${esc(n.title)}</span>
+      ${ready ? '<span class="wr" title="선행 목표가 다 끝났어요">💡</span>' : ""}
+      <span class="wd">${n.targetDate ? esc(formatPeriodKorean(n.targetDate)) : "미정"}</span>
+    </button>`;
+  };
 
-  const laneBg = layout.lanes.map((lane) => {
-    const meta = CATEGORY_META[lane.cat];
-    return `<div class="lane-bg" style="top:${lane.y}px;height:${lane.height}px;background:${meta.bgFaint};"></div>`;
-  }).join("");
-  const tickLines = layout.colTicks.slice(1).map(t => `<line x1="${t.left}" y1="0" x2="${t.left}" y2="${layout.totalHeight}" stroke="#e6d9bb" stroke-width="1"/>`).join("");
-  const todayLine = layout.todayX != null ? `<line x1="${layout.todayX}" y1="0" x2="${layout.todayX}" y2="${layout.totalHeight}" stroke="#a13a2a" stroke-width="1.5" stroke-dasharray="3 3"/>` : "";
+  const section = (title, list) => list.length ? `
+    <div class="wait-sub">${esc(title)} ${list.length}</div>
+    <div class="wait-grid">${list.map(waitCard).join("")}</div>` : "";
 
-  const edgePaths = GRAPH.edges.filter(e => nodeById.has(e.source) && nodeById.has(e.target)).map((e) => {
-    const s = nodeById.get(e.source), t = nodeById.get(e.target);
-    const x1 = s.x + NODE_W, y1 = s.y + NODE_H / 2;
-    const end = shrinkPoint(x1, y1, t.x, t.y + NODE_H / 2, ARROW_END_GAP);
-    const d = edgePathD(x1, y1, end.x, end.y);
-    const dashed = e.kind === "related" ? 'stroke-dasharray="4 4"' : "";
-    const marker = e.kind === "sequence" ? 'marker-end="url(#arrowhead)"' : "";
-    return `<path d="${d}" fill="none" stroke="#b3a07c" stroke-width="1.3" opacity="0.8" ${dashed} ${marker} data-source="${esc(e.source)}" data-target="${esc(e.target)}"/>`;
-  }).join("");
+  document.getElementById("current-view").innerHTML = `
+    <div class="cv-head">요즘 붙잡고 있는 것들</div>
+    ${currents.length
+      ? `<div class="hero-wrap">${currents.map(heroCard).join("")}</div>`
+      : `<div class="cv-empty">지금 요즘 목표로 올려둔 게 없어요. 아래에서 골라보세요.</div>`}
+    <div class="wait-section">
+      <div class="wait-head">
+        <h3>대기 목록</h3>
+        <span class="wait-hint">클릭하면 요즘 목표로 올라가요 · 💡는 선행 목표가 다 끝난 것</span>
+      </div>
+      ${section("진행 중인데 요즘 목표가 아닌 것", running)}
+      ${section("아직 시작 전", waiting)}
+      ${(running.length + waiting.length) === 0 ? '<div class="cv-empty">올릴 수 있는 목표가 없어요.</div>' : ""}
+    </div>`;
 
-  const nodeDivs = layout.lanes.flatMap(l => l.nodes).map(n => renderNodeDiv(n, NODE_W, NODE_H)).join("");
+  const cv = document.getElementById("current-view");
+  cv.querySelectorAll("[data-promote]").forEach(el => el.addEventListener("click", () => setCurrentFlag(el.dataset.promote, true)));
+  cv.querySelectorAll("[data-demote]").forEach(el => el.addEventListener("click", () => setCurrentFlag(el.dataset.demote, false)));
+  cv.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => {
+    const n = GRAPH.nodes.find(x => x.id === el.dataset.open);
+    if (n) openModal(n);
+  }));
+}
 
-  document.getElementById("canvas").style.width = layout.totalWidth + "px";
-  document.getElementById("canvas").style.height = layout.totalHeight + "px";
-  document.getElementById("canvas").innerHTML = `
-    ${laneBg}
-    <svg width="${layout.totalWidth}" height="${layout.totalHeight}" style="position:absolute;left:0;top:0;pointer-events:none;">
-      <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#b3a07c" stroke-width="1.5"/>
-      </marker></defs>
-      ${tickLines}${todayLine}${edgePaths}
-    </svg>
-    ${nodeDivs}
-  `;
-
-  wireCanvasInteractions();
+async function setCurrentFlag(id, next) {
+  const n = GRAPH.nodes.find(x => x.id === id);
+  if (!n) return;
+  const before = n.current;
+  n.current = next;
+  rerenderCanvas();
+  try {
+    await patchGoal(id, { current: next });
+    toast(next ? "요즘 목표로 올렸어요" : "요즘 목표에서 내렸어요");
+    load();
+  } catch (err) {
+    n.current = before;
+    rerenderCanvas();
+    toast("저장 실패: " + err.message, true);
+  }
 }
 
 function renderNodeDiv(n, w, h) {
@@ -1350,13 +1506,6 @@ function startMetaEdit(el) {
   noteInput.addEventListener("keydown", onKey);
   dateInput.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== noteInput) save(); }, 120));
   noteInput.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== dateInput) save(); }, 120));
-}
-
-function goToday() {
-  const x = document.querySelector(".today-label");
-  const scrollEl = document.getElementById("timeline-scroll");
-  if (!x) return;
-  scrollEl.scrollTo({ left: Math.max(0, parseFloat(x.style.left) - scrollEl.clientWidth / 2), behavior: "smooth" });
 }
 
 function goTo(id) {
