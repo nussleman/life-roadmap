@@ -75,6 +75,27 @@
   .hero-actions button { font-size:11.5px; font-family:inherit; border:1px solid var(--line); background:var(--paper);
                          color:var(--ink-soft); border-radius:6px; padding:4px 9px; cursor:pointer; }
   .hero-actions button:hover { background:var(--paper-hover); color:var(--ink); }
+  /* 진행률 */
+  .prog-wrap { display:flex; align-items:center; gap:8px; }
+  .prog-bar { position:relative; flex:1; height:7px; border-radius:999px; background:rgba(0,0,0,0.09); overflow:hidden; }
+  .prog-fill { position:absolute; inset:0 auto 0 0; border-radius:999px; background:var(--prog-fg,var(--accent)); transition:width .25s ease; }
+  .prog-num { font-size:11.5px; font-weight:600; color:var(--ink-soft); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .prog-num b { color:var(--ink); font-weight:700; }
+  .prog-pct { font-size:10.5px; color:var(--ink-soft); opacity:0.75; font-variant-numeric:tabular-nums; }
+  .hero-prog { display:flex; flex-direction:column; gap:6px; padding:9px 0 3px; }
+  .hero-prog-row { display:flex; align-items:center; gap:8px; }
+  .step-btn { font-family:inherit; font-size:12px; font-weight:700; line-height:1; border:1px solid var(--line);
+              background:var(--paper); color:var(--ink-soft); border-radius:7px; padding:5px 8px; cursor:pointer; flex-shrink:0; }
+  .step-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .step-btn:disabled { opacity:0.35; cursor:default; }
+  .step-btn.plus { min-width:34px; }
+  .prog-set { font-family:inherit; font-size:11.5px; border:none; background:transparent; color:var(--ink-soft);
+              text-decoration:underline dotted; cursor:pointer; padding:0; }
+  .prog-set:hover { color:var(--accent); }
+  /* 카드 안 진행률 (보드 · 흐름 뷰) */
+  .node-prog { display:flex; align-items:center; gap:6px; margin-top:2px; }
+  .node-prog .prog-bar { height:5px; }
+  .node-prog .prog-num { font-size:10px; }
   .cv-empty { text-align:center; font-size:13px; color:var(--ink-soft); padding:26px 0 40px; font-style:italic; }
   .wait-section { border-top:1px solid var(--line); padding-top:18px; }
   .wait-head { display:flex; align-items:baseline; gap:10px; }
@@ -344,6 +365,28 @@ function monthsIndex(dateStr) {
   return y * 12 + (m - 1);
 }
 function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+// 큰 수는 억/만 단위로 줄여서 (120000000 → "1억 2,000만")
+function fmtNum(v) {
+  if (v == null || isNaN(v)) return "-";
+  const n = Math.round(v);
+  if (Math.abs(n) < 10000) return n.toLocaleString("ko-KR");
+  const eok = Math.floor(Math.abs(n) / 100000000);
+  const man = Math.floor((Math.abs(n) % 100000000) / 10000);
+  const sign = n < 0 ? "-" : "";
+  if (eok) return sign + eok + "억" + (man ? " " + man.toLocaleString("ko-KR") + "만" : "");
+  return sign + man.toLocaleString("ko-KR") + "만" + (Math.abs(n) % 10000 ? " " + (Math.abs(n) % 10000) : "");
+}
+
+function hasProgress(n) { return typeof n.target === "number" && n.target > 0; }
+function progRatio(n) {
+  if (!hasProgress(n)) return 0;
+  return Math.max(0, Math.min(1, (Number(n.value) || 0) / n.target));
+}
+// 하나씩 세는 목표(책 40권, 그림 100개)는 +1 버튼.
+// 자산처럼 큰 수는 버튼으로 못 올리니 직접 입력만.
+const COUNT_MAX = 1000;
+function isCountable(n) { return hasProgress(n) && n.target <= COUNT_MAX; }
 
 let GRAPH = null;
 let VIEW_MODE = "current";
@@ -851,6 +894,23 @@ function renderCurrentView(filtered) {
       <div class="hero-title">${n.icon ? esc(n.icon) + " " : ""}${esc(n.title)}</div>
       ${n.targetDate ? `<div class="hero-date"${n.overdue ? ' style="color:var(--warn)"' : ""}>${esc(formatPeriodKorean(n.targetDate))}${n.overdue ? " · 기한 지남" : ""}</div>` : `<div class="hero-date" style="opacity:0.6">시기 미정</div>`}
       ${n.note ? `<div class="hero-note">${esc(n.note)}</div>` : ""}
+      ${hasProgress(n) ? `
+      <div class="hero-prog">
+        <div class="hero-prog-row">
+          <span class="prog-num"><b>${fmtNum(n.value || 0)}</b> / ${fmtNum(n.target)}</span>
+          <span class="prog-pct">${Math.round(progRatio(n) * 100)}%</span>
+        </div>
+        <div class="hero-prog-row">
+          <div class="prog-bar"><div class="prog-fill" style="width:${progRatio(n) * 100}%;--prog-fg:${cat.fg}"></div></div>
+          ${isCountable(n) ? `
+            <button class="step-btn" data-step="${esc(n.id)}" data-delta="-1" ${(n.value || 0) <= 0 ? "disabled" : ""}>−</button>
+            <button class="step-btn plus" data-step="${esc(n.id)}" data-delta="1">+1</button>
+          ` : `
+            <button class="step-btn plus" data-editval="${esc(n.id)}" title="현재 숫자 고치기">고치기</button>
+          `}
+        </div>
+      </div>` : `
+      <div class="hero-prog"><button class="prog-set" data-setgoal="${esc(n.id)}">숫자로 세기 +</button></div>`}
       <div class="hero-actions">
         <button data-open="${esc(n.id)}">자세히</button>
         <button data-demote="${esc(n.id)}">내려놓기</button>
@@ -895,6 +955,66 @@ function renderCurrentView(filtered) {
     const n = GRAPH.nodes.find(x => x.id === el.dataset.open);
     if (n) openModal(n);
   }));
+  cv.querySelectorAll("[data-step]").forEach(el => el.addEventListener("click", () => {
+    const n = GRAPH.nodes.find(x => x.id === el.dataset.step);
+    if (!n) return;
+    bumpValue(n.id, Math.max(0, (Number(n.value) || 0) + Number(el.dataset.delta)));
+  }));
+  cv.querySelectorAll("[data-editval]").forEach(el => el.addEventListener("click", () => {
+    const n = GRAPH.nodes.find(x => x.id === el.dataset.editval);
+    if (!n) return;
+    const raw = prompt(`"${n.title}" — 지금 숫자는? (목표 ${n.target.toLocaleString("ko-KR")})`, n.value ?? "");
+    if (raw === null) return;
+    const v = Number(String(raw).replace(/[^0-9.-]/g, ""));
+    if (isNaN(v)) { toast("숫자를 다시 확인해주세요", true); return; }
+    saveProgress(n.id, { value: Math.max(0, v) });
+  }));
+  cv.querySelectorAll("[data-setgoal]").forEach(el => el.addEventListener("click", () => {
+    const n = GRAPH.nodes.find(x => x.id === el.dataset.setgoal);
+    if (!n) return;
+    const raw = prompt(`"${n.title}" — 목표 숫자를 적어주세요 (예: 100)`, "");
+    if (raw === null) return;
+    const target = Number(String(raw).replace(/[^0-9.]/g, ""));
+    if (!target || target <= 0) { toast("숫자를 다시 확인해주세요", true); return; }
+    saveProgress(n.id, { value: Number(n.value) || 0, target });
+  }));
+}
+
+// 진행률 저장 — 화면 먼저 바꾸고 실패하면 되돌림
+async function saveProgress(id, patch) {
+  const n = GRAPH.nodes.find(x => x.id === id);
+  if (!n) return;
+  const before = { value: n.value, target: n.target };
+  Object.assign(n, patch);
+  rerenderCanvas();
+  try {
+    await patchGoal(id, patch);
+  } catch (err) {
+    Object.assign(n, before);
+    rerenderCanvas();
+    toast("저장 실패: " + err.message, true);
+  }
+}
+
+let BUMP_TIMER = null;
+function bumpValue(id, next) {
+  const n = GRAPH.nodes.find(x => x.id === id);
+  if (!n) return;
+  n.value = next;
+  rerenderCanvas();
+  // 연타해도 마지막 값만 한 번 보냄
+  clearTimeout(BUMP_TIMER);
+  BUMP_TIMER = setTimeout(async () => {
+    try {
+      await patchGoal(id, { value: n.value });
+      if (hasProgress(n) && n.value >= n.target && n.status !== "달성") {
+        toast(`${n.title} — 목표 숫자에 도달했어요! 🎉`);
+      }
+    } catch (err) {
+      toast("저장 실패: " + err.message, true);
+      load();
+    }
+  }, 700);
 }
 
 async function setCurrentFlag(id, next) {
@@ -931,6 +1051,10 @@ function renderNodeDiv(n, w, h) {
     ${readyToStart ? '<div class="ready-badge">💡</div>' : ""}
     <div class="node-title">${emoji} ${esc(n.title)}</div>
     <div class="node-meta-line" data-id="${esc(n.id)}" data-date="${esc(n.targetDate ?? "")}" data-note="${esc(n.note ?? "")}">${metaText}</div>
+    ${hasProgress(n) && n.status !== "달성" ? `<div class="node-prog">
+      <div class="prog-bar"><div class="prog-fill" style="width:${progRatio(n) * 100}%;--prog-fg:${cat.fg}"></div></div>
+      <span class="prog-num">${fmtNum(n.value || 0)}/${fmtNum(n.target)}</span>
+    </div>` : ""}
   </div>`;
 }
 
@@ -1545,6 +1669,10 @@ function openCreateModal() {
         <input type="date" id="c-date">
       </div>
       <div class="field">
+        <label>목표 숫자 <span style="font-weight:400;color:var(--ink-soft)">— 셀 수 있는 목표라면 (선택)</span></label>
+        <input type="number" id="c-target" placeholder="예: 100">
+      </div>
+      <div class="field">
         <label>메모</label>
         <textarea id="c-note" placeholder="메모 (선택)"></textarea>
       </div>
@@ -1576,6 +1704,8 @@ function openCreateModal() {
     const targetDate = overlay.querySelector("#c-date").value || null;
     const note = overlay.querySelector("#c-note").value;
     const categories = Array.from(overlay.querySelectorAll(".c-cat-cb:checked")).map(cb => cb.value);
+    const cTargetRaw = overlay.querySelector("#c-target").value.trim();
+    const target = cTargetRaw === "" ? null : Number(cTargetRaw);
 
     msg.textContent = "추가하는 중...";
     msg.className = "modal-msg";
@@ -1583,7 +1713,7 @@ function openCreateModal() {
       const res = await fetch(WORKER_URL + "/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, status, targetDate, note, categories }),
+        body: JSON.stringify({ title, status, targetDate, note, categories, target, value: target ? 0 : null }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1630,6 +1760,14 @@ function openModal(node) {
       <div class="field">
         <label>메모</label>
         <textarea id="f-note">${esc(node.note ?? "")}</textarea>
+      </div>
+      <div class="field">
+        <label>진행 숫자 <span style="font-weight:400;color:var(--ink-soft)">— 목표값을 채우면 카드에 막대가 생겨요</span></label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="number" id="f-value" placeholder="현재값" value="${node.value ?? ""}" style="flex:1; min-width:0;">
+          <span style="color:var(--ink-soft)">/</span>
+          <input type="number" id="f-target" placeholder="목표값" value="${node.target ?? ""}" style="flex:1; min-width:0;">
+        </div>
       </div>
       <div class="field">
         <label>선행 목표</label>
@@ -1733,6 +1871,10 @@ function openModal(node) {
     const status = overlay.querySelector("#f-status").value;
     const targetDate = overlay.querySelector("#f-date").value || null;
     const note = overlay.querySelector("#f-note").value;
+    const vRaw = overlay.querySelector("#f-value").value.trim();
+    const tRaw = overlay.querySelector("#f-target").value.trim();
+    const value = vRaw === "" ? null : Number(vRaw);
+    const target = tRaw === "" ? null : Number(tRaw);
     const msg = overlay.querySelector("#f-msg");
     msg.textContent = "저장 중...";
     msg.className = "modal-msg";
@@ -1740,7 +1882,7 @@ function openModal(node) {
       const res = await fetch(WORKER_URL + "/goals/" + encodeURIComponent(node.id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, targetDate, note, predecessors, successors }),
+        body: JSON.stringify({ status, targetDate, note, predecessors, successors, value, target }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
